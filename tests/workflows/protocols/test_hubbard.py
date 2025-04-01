@@ -9,13 +9,13 @@ from aiida_hubbard.workflows.hubbard import SelfConsistentHubbardWorkChain
 def test_get_available_protocols():
     """Test ``SelfConsistentHubbardWorkChain.get_available_protocols``."""
     protocols = SelfConsistentHubbardWorkChain.get_available_protocols()
-    assert sorted(protocols.keys()) == ['fast', 'moderate', 'precise']
+    assert sorted(protocols.keys()) == ['fast', 'balanced', 'stringent']
     assert all('description' in protocol for protocol in protocols.values())
 
 
 def test_get_default_protocol():
     """Test ``SelfConsistentHubbardWorkChain.get_default_protocol``."""
-    assert SelfConsistentHubbardWorkChain.get_default_protocol() == 'moderate'
+    assert SelfConsistentHubbardWorkChain.get_default_protocol() == 'balanced'
 
 
 def test_default(fixture_code, data_regression, generate_hubbard_structure, serialize_builder):

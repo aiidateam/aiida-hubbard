@@ -8,13 +8,13 @@ from aiida_hubbard.workflows.hp.main import HpWorkChain
 def test_get_available_protocols():
     """Test ``HpWorkChain.get_available_protocols``."""
     protocols = HpWorkChain.get_available_protocols()
-    assert sorted(protocols.keys()) == ['fast', 'moderate', 'precise']
+    assert sorted(protocols.keys()) == ['fast', 'balanced', 'stringent']
     assert all('description' in protocol for protocol in protocols.values())
 
 
 def test_get_default_protocol():
     """Test ``HpWorkChain.get_default_protocol``."""
-    assert HpWorkChain.get_default_protocol() == 'moderate'
+    assert HpWorkChain.get_default_protocol() == 'balanced'
 
 
 def test_default(fixture_code, data_regression, serialize_builder):
