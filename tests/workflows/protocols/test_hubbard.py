@@ -9,7 +9,7 @@ from aiida_hubbard.workflows.hubbard import SelfConsistentHubbardWorkChain
 def test_get_available_protocols():
     """Test ``SelfConsistentHubbardWorkChain.get_available_protocols``."""
     protocols = SelfConsistentHubbardWorkChain.get_available_protocols()
-    assert sorted(protocols.keys()) == ['fast', 'balanced', 'stringent']
+    assert sorted(protocols.keys()) == sorted(sorted(['fast', 'balanced', 'stringent']))
     assert all('description' in protocol for protocol in protocols.values())
 
 

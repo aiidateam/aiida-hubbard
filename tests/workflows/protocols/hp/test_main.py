@@ -8,7 +8,7 @@ from aiida_hubbard.workflows.hp.main import HpWorkChain
 def test_get_available_protocols():
     """Test ``HpWorkChain.get_available_protocols``."""
     protocols = HpWorkChain.get_available_protocols()
-    assert sorted(protocols.keys()) == ['fast', 'balanced', 'stringent']
+    assert sorted(protocols.keys()) == sorted(['fast', 'balanced', 'stringent'])
     assert all('description' in protocol for protocol in protocols.values())
 
 
