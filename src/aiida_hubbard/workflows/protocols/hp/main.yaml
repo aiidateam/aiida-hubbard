@@ -4,11 +4,11 @@ default_inputs:
     parallelize_qpoints: True
     qpoints_distance: 0.8
 
-default_protocol: moderate
+default_protocol: balanced
 protocols:
-    moderate:
-        description: 'Protocol to perform a band structure calculation at normal precision at moderate computational cost.'
-    precise:
+    balanced:
+        description: 'Protocol to perform a band structure calculation at normal precision at balanced computational cost.'
+    stringent:
         description: 'Protocol to perform a band structure calculation at high precision at higher computational cost.'
         qpoints_distance: 0.4
     fast:
