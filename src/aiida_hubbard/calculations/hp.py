@@ -197,7 +197,7 @@ class HpCalculation(CalcJob):
         spec.exit_code(490, 'ERROR_MISSING_CHI_MATRICES',
             message='The code failed to reconstruct the full chi matrix as some chi matrices were missing')
         spec.exit_code(495, 'ERROR_INCOMPATIBLE_FFT_GRID',
-            message='The code failed due to incompatibility between the FFT grid and the parallelization options.')
+            message='The code failed due an incompatible FFT grid.')
         # yapf: enable
 
     @classproperty
