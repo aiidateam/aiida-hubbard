@@ -113,13 +113,13 @@ jobs:
             steps:
             -   uses: actions/checkout@v4
 
-            -   name: Cache Python dependencies
-                uses: actions/cache@v4
-                with:
-                    path: ~/.cache/pip
-                    key: pip-${{ matrix.python-version }}-tests-${{ hashFiles('**/setup.json') }}
-                    restore-keys:
-                        pip-${{ matrix.python-version }}-tests
+            # -   name: Cache Python dependencies
+            #     uses: actions/cache@v4
+            #     with:
+            #         path: ~/.cache/pip
+            #         key: pip-${{ matrix.python-version }}-tests-${{ hashFiles('**/setup.json') }}
+            #         restore-keys:
+            #             pip-${{ matrix.python-version }}-tests
 
             -   name: Setup Conda
                 uses: conda-incubator/setup-miniconda@v3
