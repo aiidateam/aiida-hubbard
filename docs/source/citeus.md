@@ -2,9 +2,11 @@
 
 # Cite
 
+[![DOI](https://img.shields.io/badge/DOI-10.1038/s41524025016854-purple.svg)](https://doi.org/10.1038/s41524-025-01685-4)
+
 If you use this plugin for your research, please cite the following works:
 
-> Lorenzo Bastonero, Cristiano Malica, Eric Macke, Marnik Bercx, Sebastiaan Huber, Iurii Timrov, and Nicola Marzari, [*First-principles Hubbard parameters with automated and reproducible workflows*](https://arxiv.org/abs/2503.01590), arXiv:2503.01590v1 (2025)
+> Lorenzo Bastonero, Cristiano Malica, Eric Macke, Marnik Bercx, Sebastiaan Huber, Iurii Timrov, and Nicola Marzari, [*First-principles Hubbard parameters with automated and reproducible workflows*](https://doi.org/10.1038/s41524-025-01685-4), npj Comput. Mater. **11**, 183 (2025)
 
 > Sebastiaan. P. Huber _et al._, [*AiiDA 1.0, a scalable computational infrastructure for automated reproducible workflows and data provenance*](https://doi.org/10.1038/s41597-020-00638-4), Scientific Data **7**, 300 (2020)
 
