@@ -1,3 +1,23 @@
+## v0.3.0
+
+Minor release that mainly supports the new version of `aiida-core` v2.7 and above.
+
+### 📚 Documentation
+
+* `Docs`: update compatibilit matrix  [[feaa40f](https://github.com/aiidateam/aiida-hubbard/commit/feaa40f4ba9b25f4197a9f5634b59f3d87298b71)]
+* Update the reference with peer-reviewed article  [[fc0d2cf](https://github.com/aiidateam/aiida-hubbard/commit/fc0d2cf50020117944c9cc5e729051c665f36f9c)]
+* Docs: fix some old typos  [[c85ff8d](https://github.com/aiidateam/aiida-hubbard/commit/c85ff8ded23861c12881152e485875653710f989)]
+
+### 🔧 Maintenance
+
+* DevOps: stick to PEP 404 for version identification  [[55b8b0d](https://github.com/aiidateam/aiida-hubbard/commit/55b8b0d7c3ad53f232c602ef22d37170a61a1599)]
+
+### ⬆️ Update dependencies
+
+* Deps: allow aiida-core version 2.7 or higher  [[f0d2fb8](https://github.com/aiidateam/aiida-hubbard/commit/f0d2fb862ad9cf613cce3cb04b95c399b9a4ec0b)]
+
+
+
 ## v0.2.0
 
 This version of the plugin comes mainly with a breaking change with the protocol parameters, to align with a recent work devising improved protocols and better naming:
