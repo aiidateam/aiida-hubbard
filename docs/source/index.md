@@ -41,6 +41,8 @@ reference/index
 
 An AiiDA plugin package for the calculation of Hubbard parameters from first-principles using the [Quantum ESPRESSO](http://www.quantumespresso.org) and [HP](https://www.sciencedirect.com/science/article/pii/S0010465522001746) software suite. Compute onsites and intersites Hubbard parameters self-consistently and in automated fashion through state-of-the-art DFPT implementation, leveraging maximal parallel computation over atoms and monochromatic perturbations, along with data provenance provided by AiiDA.
 
+[![DOI](https://img.shields.io/badge/DOI-10.1038/s41524025016854-purple.svg)](https://doi.org/10.1038/s41524-025-01685-4)
+
 [![PyPI version](https://badge.fury.io/py/aiida-hubbard.svg)](https://badge.fury.io/py/aiida-hubbard)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard)
 [![Build Status](https://github.com/aiidateam/aiida-hubbard/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/aiidateam/aiida-hubbard/actions)
@@ -95,7 +97,7 @@ To the tutorials
 
 If you use this plugin for your research, please cite the following works:
 
-> Lorenzo Bastonero, Cristiano Malica, Eric Macke, Marnik Bercx, Sebastiaan Huber, Iurii Timrov, and Nicola Marzari, [*First-principles Hubbard parameters with automated and reproducible workflows*](https://arxiv.org/abs/2503.01590), arXiv:2503.01590v1 (2025)
+> Lorenzo Bastonero, Cristiano Malica, Eric Macke, Marnik Bercx, Sebastiaan Huber, Iurii Timrov, and Nicola Marzari, [*First-principles Hubbard parameters with automated and reproducible workflows*](https://doi.org/10.1038/s41524-025-01685-4), npj Comput. Mater. **11**, 183 (2025)
 
 > Sebastiaan. P. Huber _et al._, [*AiiDA 1.0, a scalable computational infrastructure for automated reproducible workflows and data provenance*](https://doi.org/10.1038/s41597-020-00638-4), Scientific Data **7**, 300 (2020)
 

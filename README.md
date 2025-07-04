@@ -4,8 +4,10 @@ AiiDA plugin for the first-principles calculation of Hubbard parameters.
 
 This is also the official AiiDA plugin for the [HP](https://www.sciencedirect.com/science/article/pii/S0010465522001746) code of [Quantum ESPRESSO](https://www.quantum-espresso.org/).
 
+
 |    | |
 |-----|----------------------------------------------------------------------------|
+| Reference | [![DOI](https://img.shields.io/badge/DOI-10.1038/s41524025016854-purple.svg)](https://doi.org/10.1038/s41524-025-01685-4) |
 |Latest release| [![PyPI version](https://badge.fury.io/py/aiida-hubbard.svg)](https://badge.fury.io/py/aiida-hubbard)[![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard) |
 |Getting help| [![Docs status](https://readthedocs.org/projects/aiida-hubbard/badge)](http://aiida-hubbard.readthedocs.io/) [![Discourse status](https://img.shields.io/discourse/status?server=https%3A%2F%2Faiida.discourse.group%2F)](https://aiida.discourse.group/)
 |Build status| [![Build Status](https://github.com/aiidateam/aiida-hubbard/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/aiidateam/aiida-hubbard/actions) [![Coverage Status](https://codecov.io/gh/aiidateam/aiida-hubbard/branch/master/graph/badge.svg)](https://codecov.io/gh/aiidateam/aiida-hubbard) |
