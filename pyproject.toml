@@ -26,8 +26,8 @@ classifiers = [
 keywords = ['aiida', 'workflows']
 requires-python = '>=3.9'
 dependencies = [
-    'aiida-core>=2.3,!=2.6.*,<3.0',
-    'aiida-quantumespresso>=4.10,<5.0',
+    'aiida-core~=2.3,!=2.6',
+    'aiida-quantumespresso~=4.10',
 ]
 
 [project.urls]
@@ -45,8 +45,8 @@ docs = [
     'sphinx-click~=4.4.0',
     'sphinx-design~=0.4.1',
     'sphinxcontrib-details-directive~=0.1.0',
-    'sphinx-autoapi~=3.0.0',
-    'myst-parser~=3.0.0',
+    'sphinx-autoapi~=3.0',
+    'myst-parser~=3.0',
     'sphinx-togglebutton',
 ]
 pre-commit = [
