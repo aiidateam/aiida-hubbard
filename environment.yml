@@ -1,10 +1,10 @@
 channels:
   - conda-forge
 dependencies:
-  - qe>=7.4
+  - qe~=7.4
   - python=3.9
   - pip
-  - aiida-core~=2.5.0
+  - aiida-core~=2.7
   - xmltodict
   - jupyterlab=3
   - jupyterlab-myst
