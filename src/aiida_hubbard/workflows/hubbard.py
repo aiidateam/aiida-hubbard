@@ -591,14 +591,18 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         inputs = AttributeDict(self.exposed_inputs(HpWorkChain, namespace='hubbard'))
 
         if 'radial_analysis' in self.inputs:
+            from qe_tools import CONSTANTS
+
             kwargs = self.inputs.radial_analysis.get_dict()
             hubbard_utils = HubbardUtils(self.ctx.current_hubbard_structure)
-            num_neigh = hubbard_utils.get_max_number_of_neighbours(**kwargs)
+            radius = hubbard_utils.get_intersites_radius(**kwargs)  # in Angstrom
 
             parameters = inputs.hp.parameters.get_dict()
-            parameters['INPUTHP']['num_neigh'] = num_neigh
+            parameters['INPUTHP']['num_neigh'] = 100
+            parameters['INPUTHP']['rmax'] = radius / CONSTANTS.bohr_to_ang
 
             settings = {'radial_analysis': self.inputs.radial_analysis.get_dict()}
+
             if 'settings' in inputs.hp:
                 settings = inputs.hp.settings.get_dict()
                 settings['radial_analysis'] = self.inputs.radial_analysis.get_dict()
