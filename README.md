@@ -20,8 +20,8 @@ The matrix below assumes the user always install the latest patch release of the
 
 | Plugin | AiiDA | Python | Quantum ESPRESSO |
 |-|-|-|-|
-| `v0.3.0` | ![Compatibility for v4.0][AiiDA v4.0-pydantic3] |  [![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard) | ![Quantum ESPRESSO compatibility][QE v7.2-7.4] |
-| `v0.1.0 < v0.2.0` | ![Compatibility for v4.0][AiiDA v4.0-pydantic2] |  [![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard) | ![Quantum ESPRESSO compatibility][QE v7.2-7.4] |
+| `v0.3.0 <= v0.4.0` | ![Compatibility for v4.0][AiiDA v4.0-pydantic3] |  [![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard) | ![Quantum ESPRESSO compatibility][QE v7.2-7.4] |
+| `v0.1.0 <= v0.2.0` | ![Compatibility for v4.0][AiiDA v4.0-pydantic2] |  [![PyPI pyversions](https://img.shields.io/pypi/pyversions/aiida-hubbard.svg)](https://pypi.python.org/pypi/aiida-hubbard) | ![Quantum ESPRESSO compatibility][QE v7.2-7.4] |
 
 ## Installation
 To install using pip, simply execute:

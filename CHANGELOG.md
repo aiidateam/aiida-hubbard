@@ -1,3 +1,17 @@
+## v0.4.0
+
+Minor release that fixes the on-the-fly determination of intersite Hubbard parameters. This comes with an update of the `aiida-quantumespresso` plugin.
+
+### 🐛 Bug fixes
+
+* `Hubbard`: fix on-the-fly determination of V pairs  [[7303763](https://github.com/aiidateam/aiida-hubbard/commit/73037632e845926c369d82b336bef388a9ddc41a)]
+
+### ⬆️ Update dependencies
+
+* `Hubbard`: fix on-the-fly determination of V pairs  [[7303763](https://github.com/aiidateam/aiida-hubbard/commit/73037632e845926c369d82b336bef388a9ddc41a)]
+
+
+
 ## v0.3.0
 
 Minor release that mainly supports the new version of `aiida-core` v2.7 and above.
