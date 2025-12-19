@@ -416,7 +416,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         for kind in self.ctx.current_hubbard_structure.kinds:
             for key, pseudo in pseudos.items():
                 symbol = re.sub(r'\d', '', key)
-                if re.match(fr'{kind.symbol}[0-9]*', symbol):
+                if re.fullmatch(fr'{re.escape(kind.symbol)}\d*', symbol):
                     results[kind.name] = pseudo
                     break
             else:
