@@ -228,6 +228,44 @@ def test_skip_relax_iterations(generate_workchain_hubbard, generate_inputs_hubba
 
 
 @pytest.mark.usefixtures('aiida_profile')
+def test_get_pseudos(
+    filepath_fixtures,
+    generate_upf_data,
+    generate_workchain_hubbard,
+    generate_inputs_hubbard,
+):
+    """Test `SelfConsistentHubbardWorkChain.get_pseudos` method."""
+    from pathlib import Path
+
+    from aiida.orm import StructureData
+    from aiida_quantumespresso.data.hubbard_structure import HubbardStructureData
+    from ase.io import read
+
+    atoms = read(Path(filepath_fixtures, 'structures', '2d_material.cif'))
+    hubbard_structure = HubbardStructureData.from_structure(StructureData(ase=atoms))
+    hubbard_structure.initialize_onsites_hubbard('Cu', '3d', 3.0)
+    hubbard_structure.initialize_onsites_hubbard('Hg', '5d', 5.0)
+    pseudos = {kind: generate_upf_data(kind) for kind in hubbard_structure.get_kind_names()}
+
+    inputs = generate_inputs_hubbard()
+    inputs['scf']['pw']['pseudos'] = pseudos
+    inputs['hubbard_structure'] = hubbard_structure
+    process = generate_workchain_hubbard(inputs=inputs)
+
+    process.setup()
+    process.current_hubbard_structure = hubbard_structure
+
+    for key, pseudo in process.get_pseudos().items():
+        assert pseudo == pseudos[key]
+
+    print('#' * 50)
+    print('#' * 50)
+    print(process.get_pseudos())
+    print('#' * 50)
+    print('#' * 50)
+
+
+@pytest.mark.usefixtures('aiida_profile')
 def test_skip_relax_iterations_relabeling(
     generate_workchain_hubbard, generate_inputs_hubbard, generate_hp_workchain_node, generate_hubbard_structure
 ):
