@@ -1,3 +1,20 @@
+## v0.5.0
+
+This minor release comes with a relatively important fix for the self-consistent Hubbard parameters workflow. The dynamical assignement of pseudopotentials wrongly assigned pseudoes to some specific species combinations (e.g., `H` with `Hg`, `C` with `Co`, `Cu`). This is now fixed and tested in this version.
+
+Moreover, two extra exit codes are added to cover some `hp.x` failures and when Hubbard parameters diverge in the linear response calculation.
+
+### 👌 Improvements
+
+* 👌 Parser: add exit codes for diverging Hubbard parameters  [[f475b58](https://github.com/aiidateam/aiida-hubbard/commit/f475b5891a67828fd00abec29e7c7fce46634307)]
+* 👌 Parser: add S matrix not positive definite exit code  [[c7614e8](https://github.com/aiidateam/aiida-hubbard/commit/c7614e88a094c9369b7936d14e27be4ec0895da8)]
+
+### 🐛 Bug fixes
+
+* 🐛 Fix incorrect assignement of pseudos  [[38376ab](https://github.com/aiidateam/aiida-hubbard/commit/38376ab90414d90ee7e1b7ef61546be42faa6e78)]
+
+
+
 ## v0.4.0
 
 Minor release that fixes the on-the-fly determination of intersite Hubbard parameters. This comes with an update of the `aiida-quantumespresso` plugin.
