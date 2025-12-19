@@ -344,6 +344,7 @@ def test_hp_failed_invalid_namelist(aiida_localhost, generate_calc_job_node, gen
     ('failed_computing_cholesky', HpCalculation.exit_codes.ERROR_COMPUTING_CHOLESKY.status),
     ('failed_missing_chi_matrices', HpCalculation.exit_codes.ERROR_MISSING_CHI_MATRICES.status),
     ('failed_incompatible_fft_grid', HpCalculation.exit_codes.ERROR_INCOMPATIBLE_FFT_GRID.status),
+    ('diverging_default', HpCalculation.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS.status),
 ))
 def test_failed_calculation(
     generate_calc_job_node,
@@ -363,3 +364,28 @@ def test_failed_calculation(
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
     assert calcfunction.exit_status == exit_status
+
+
+def test_hp_diverging_hubbard_structure(
+    aiida_localhost, generate_calc_job_node, generate_parser, generate_inputs_default, data_regression, tmpdir
+):
+    """Test a default `hp.x` calculation."""
+    name = 'diverging_hubbard_structure'
+    entry_point_calc_job = 'quantumespresso.hp'
+    entry_point_parser = 'quantumespresso.hp'
+
+    attributes = {'retrieve_temporary_list': ['HUBBARD.dat']}
+    node = generate_calc_job_node(
+        entry_point_calc_job,
+        aiida_localhost,
+        test_name=name,
+        inputs=generate_inputs_default(only_u=False),
+        attributes=attributes,
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+    )
+    parser = generate_parser(entry_point_parser)
+    _, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
+
+    assert calcfunction.is_finished, calcfunction.exception
+    assert calcfunction.is_failed, calcfunction.exit_status
+    assert calcfunction.exit_status == HpCalculation.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS.status

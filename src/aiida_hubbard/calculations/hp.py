@@ -198,6 +198,8 @@ class HpCalculation(CalcJob):
             message='The code failed to reconstruct the full chi matrix as some chi matrices were missing')
         spec.exit_code(495, 'ERROR_INCOMPATIBLE_FFT_GRID',
             message='The code failed due an incompatible FFT grid.')
+        spec.exit_code(600, 'ERROR_DIVERGING_HUBBARD_PARAMETERS',
+            message='The linear response calculation returned diverging parameters.')
         # yapf: enable
 
     @classproperty
