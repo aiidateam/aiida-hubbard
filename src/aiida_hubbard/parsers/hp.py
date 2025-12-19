@@ -52,7 +52,9 @@ class HpParser(Parser):
             # If the `HUBBARD.dat` is not produced, it means it is an "only Hubbard U" calculation,
             # thus we set the Hubbard parameters from the ``hubbard`` output, which contains the onsite U.
             try:
-                self.parse_hubbard_dat(kwargs['retrieved_temporary_folder'])
+                exit_code = self.parse_hubbard_dat(kwargs['retrieved_temporary_folder'])
+                if exit_code:
+                    return exit_code
             except (KeyError, FileNotFoundError):
                 self.get_hubbard_structure()
 
@@ -151,7 +153,10 @@ class HpParser(Parser):
         try:
             with self.retrieved.base.repository.open(filename, 'r') as handle:
                 parsed_data = self.parse_hubbard_content(handle)
-        except IOError:
+        except (IOError, ValueError) as exc:
+            if isinstance(exc, ValueError):
+                return self.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS
+
             if self.is_complete_calculation:
                 return self.exit_codes.ERROR_OUTPUT_HUBBARD_MISSING
         else:
@@ -219,7 +224,10 @@ class HpParser(Parser):
 
         hubbard_structure.clear_hubbard_parameters()
         hubbard_utils = HubbardUtils(hubbard_structure)
-        hubbard_utils.parse_hubbard_dat(filepath=filepath)
+        try:
+            hubbard_utils.parse_hubbard_dat(filepath=filepath)
+        except ValueError:
+            return self.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS
 
         if intersites is None:
             self.out('hubbard_structure', hubbard_utils.hubbard_structure)
@@ -318,6 +326,12 @@ class HpParser(Parser):
                     if subline:
                         subline_number += 1
                         subdata = subline.split()
+
+                        try:
+                            value = float(subdata[7])
+                        except ValueError as exc:
+                            raise ValueError(f'could not parse `{subdata[7]}` value from line `{subline}`') from exc
+
                         result['hubbard_U']['sites'].append({
                             'index': int(subdata[0]) - 1,  # QE indices start from 1
                             'type': int(subdata[1]),
@@ -326,7 +340,7 @@ class HpParser(Parser):
                             'new_type': int(subdata[4]),
                             'new_kind': subdata[5],
                             'manifold': subdata[6],
-                            'value': float(subdata[7]),
+                            'value': value,
                         })
                     else:
                         parsed = True

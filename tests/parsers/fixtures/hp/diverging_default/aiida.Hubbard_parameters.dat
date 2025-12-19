@@ -1,0 +1,29 @@
+
+  =-------------------------------------------------------------------=
+
+                           Hubbard U parameters:
+
+       site n.  type  label  spin  new_type  new_label  manifold  Hubbard U (eV)
+         1        1    Co      1      1         Co        3d         *****
+
+  =-------------------------------------------------------------------=
+
+
+          chi0 matrix :
+   -0.270848
+
+
+          chi matrix :
+   -0.086463
+
+
+        chi0^{-1} matrix :
+   -3.692112
+
+
+        chi^{-1} matrix :
+  -11.565582
+
+
+         Hubbard matrix :
+    7.873470
