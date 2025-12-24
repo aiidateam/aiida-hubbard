@@ -121,7 +121,7 @@ jobs:
                     auto-activate-base: true
 
             -   name: Set up Quantum ESPRESSO
-                run: conda install -y qe=7.4 pip aiida-core
+                run: conda install -y qe pip aiida-core
 
             -   name: Install Python dependencies
                 run: pip install -e .[tests]
