@@ -390,3 +390,147 @@ def test_hp_diverging_hubbard_structure(
     assert calcfunction.is_finished, calcfunction.exception
     assert calcfunction.is_failed, calcfunction.exit_status
     assert calcfunction.exit_status == HpCalculation.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS.status
+
+# ---------------------------------------------------------------------------
+# Fixtures and tests for get_hubbard_structure per-kind averaging (regression
+# for the bug where two atoms of the same kind produced duplicate HUBBARD card
+# entries with slightly different U values, causing pw.x to crash).
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def generate_hubbard_structure_two_same_kind():
+    """HubbardStructureData with two atoms sharing the same kind name.
+
+    LiCoO2 (the default fixture) has only one Co, so the per-atom duplication
+    bug never manifests there.  This fixture uses a minimal cell with two Co
+    atoms both labelled 'Co' to reproduce the Fe2/Fe3 situation in Fe3O4.
+    """
+    from aiida.orm import StructureData
+    from aiida_quantumespresso.data.hubbard_structure import HubbardStructureData
+
+    cell = [[4.0, 0.0, 0.0], [0.0, 4.0, 0.0], [0.0, 0.0, 8.0]]
+    structure = StructureData(cell=cell)
+    structure.append_atom(position=(0.0, 0.0, 0.0), symbols='Co', name='Co')
+    structure.append_atom(position=(0.0, 0.0, 4.0), symbols='Co', name='Co')
+    structure.append_atom(position=(2.0, 2.0, 2.0), symbols='O',  name='O')
+
+    hs = HubbardStructureData.from_structure(structure)
+    hs.initialize_onsites_hubbard('Co', '3d', 5.0, use_kinds=True)
+    return hs
+
+
+def test_get_hubbard_structure_one_param_per_kind(generate_hubbard_structure_two_same_kind):
+    """get_hubbard_structure must produce one HubbardParameter per (kind, manifold), not per atom.
+
+    hp.x perturbs each atom independently and reports slightly different U values
+    for symmetry-equivalent atoms due to finite numerical precision.  The parser
+    must average those values and store a single entry keyed by the kind's first
+    atom index, so that get_hubbard_card() emits exactly one 'U Co-3d' line.
+    """
+    from unittest.mock import MagicMock
+    from aiida_hubbard.parsers.hp import HpParser
+    from aiida_quantumespresso.utils.hubbard import HubbardUtils
+
+    hs = generate_hubbard_structure_two_same_kind
+
+    # Simulate hp.x stdout: two Co atoms (indices 0 and 1) with slightly
+    # different U values — the kind of numerical noise seen in production.
+    fake_hubbard_dict = {
+        'sites': [
+            {'index': 0, 'manifold': '3d', 'value': 5.0692,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+            {'index': 1, 'manifold': '3d', 'value': 5.0693,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+        ]
+    }
+
+    parser = MagicMock(spec=HpParser)
+    parser.node.inputs.hubbard_structure = hs
+    parser.outputs.hubbard.get_dict.return_value = fake_hubbard_dict
+
+    HpParser.get_hubbard_structure(parser)
+
+    out_hs = parser.out.call_args[0][1]  # first positional arg to self.out('hubbard_structure', <here>)
+    params = out_hs.hubbard.parameters
+
+    co_params = [p for p in params
+                 if out_hs.sites[p.atom_index].kind_name == 'Co'
+                 and p.atom_manifold == '3d']
+
+    assert len(co_params) == 1, (
+        f"Expected 1 HubbardParameter for Co-3d, got {len(co_params)}. "
+        "Atoms of the same kind must be collapsed to a single entry."
+    )
+
+
+def test_get_hubbard_structure_averages_value(generate_hubbard_structure_two_same_kind):
+    """The single per-kind U value must be the mean of all per-atom hp.x outputs."""
+    from unittest.mock import MagicMock
+    from aiida_hubbard.parsers.hp import HpParser
+
+    hs = generate_hubbard_structure_two_same_kind
+
+    u1, u2 = 5.0692, 5.0698
+    fake_hubbard_dict = {
+        'sites': [
+            {'index': 0, 'manifold': '3d', 'value': u1,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+            {'index': 1, 'manifold': '3d', 'value': u2,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+        ]
+    }
+
+    parser = MagicMock(spec=HpParser)
+    parser.node.inputs.hubbard_structure = hs
+    parser.outputs.hubbard.get_dict.return_value = fake_hubbard_dict
+
+    HpParser.get_hubbard_structure(parser)
+
+    out_hs = parser.out.call_args[0][1]
+    co_param = next(
+        p for p in out_hs.hubbard.parameters
+        if out_hs.sites[p.atom_index].kind_name == 'Co'
+    )
+
+    assert abs(co_param.value - (u1 + u2) / 2) < 1e-10, (
+        f"Expected averaged U = {(u1 + u2) / 2}, got {co_param.value}"
+    )
+
+
+def test_get_hubbard_structure_hubbard_card_no_duplicate_kind(generate_hubbard_structure_two_same_kind):
+    """The HUBBARD card produced from the parser output must have exactly one line per (kind, manifold).
+
+    Two 'U Co-3d <value>' lines — even with slightly different values — are
+    invalid QE input: pw.x assigns Hubbard U per species, not per atom index.
+    """
+    from unittest.mock import MagicMock
+    from aiida_hubbard.parsers.hp import HpParser
+    from aiida_quantumespresso.utils.hubbard import HubbardUtils
+
+    hs = generate_hubbard_structure_two_same_kind
+
+    fake_hubbard_dict = {
+        'sites': [
+            {'index': 0, 'manifold': '3d', 'value': 5.0692,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+            {'index': 1, 'manifold': '3d', 'value': 5.0693,
+             'type': 1, 'new_type': 1, 'label': 'Co', 'new_label': 'Co'},
+        ]
+    }
+
+    parser = MagicMock(spec=HpParser)
+    parser.node.inputs.hubbard_structure = hs
+    parser.outputs.hubbard.get_dict.return_value = fake_hubbard_dict
+
+    HpParser.get_hubbard_structure(parser)
+
+    out_hs = parser.out.call_args[0][1]
+    card = HubbardUtils(out_hs).get_hubbard_card()
+    co_lines = [line for line in card.splitlines()
+                if line.strip().startswith('U') and 'Co-3d' in line]
+
+    assert len(co_lines) == 1, (
+        f"HUBBARD card must have exactly one 'U Co-3d' line (QE assigns U per "
+        f"species), got {len(co_lines)}:\n{card}"
+    )
+
