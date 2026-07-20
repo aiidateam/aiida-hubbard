@@ -89,7 +89,7 @@ jobs:
 
             strategy:
                 matrix:
-                    python-version: ['3.9', '3.12']
+                    python-version: ['3.12']
 
             defaults:
                 run:
@@ -121,7 +121,7 @@ jobs:
                     auto-activate-base: true
 
             -   name: Set up Quantum ESPRESSO
-                run: conda install -y qe openmpi~=4.0 pip aiida-core
+                run: conda install -y qe pip aiida-core
 
             -   name: Install Python dependencies
                 run: pip install -e .[tests]

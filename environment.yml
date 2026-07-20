@@ -1,8 +1,7 @@
 channels:
   - conda-forge
 dependencies:
-  - qe==7.5
-  - openmpi~=4.0
+  - qe
   - python=3.12
   - pip
   - aiida-core~=2.7
