@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        -   uses: actions/checkout@v1
+        -   uses: actions/checkout@v4
 
         -   name: Cache python dependencies
             id: cache-pip
@@ -21,12 +21,12 @@ jobs:
                     pip-pre-commit-
 
         -   name: Set up Python
-            uses: actions/setup-python@v2
+            uses: actions/setup-python@v5
             with:
-                python-version: '3.9'
+                python-version: '3.10'
 
         -   name: Install python dependencies
-            run: pip install -e .[pre-commit,tests]
+            run: pip install -e .[pre-commit]
 
         -   name: Run pre-commit
             run: pre-commit run --all-files || ( git status --short ; git diff ; exit 1 )
@@ -40,7 +40,7 @@ jobs:
 
         strategy:
             matrix:
-                python-version: ['3.9']
+                python-version: ['3.10']
 
         services:
             rabbitmq:
@@ -61,7 +61,7 @@ jobs:
                     pip-${{ matrix.python-version }}-tests
 
         -   name: Set up Python ${{ matrix.python-version }}
-            uses: actions/setup-python@v2
+            uses: actions/setup-python@v5
             with:
                 python-version: ${{ matrix.python-version }}
 
@@ -79,7 +79,7 @@ jobs:
             with:
                 token: ${{ secrets.CODECOV_TOKEN }}
                 slug: aiidateam/aiida-hubbard
-                name: pytests-3.9
+                name: pytests-3.10
                 flags: pytests
                 fail_ci_if_error: true
 
@@ -89,7 +89,7 @@ jobs:
 
             strategy:
                 matrix:
-                    python-version: ['3.9', '3.12']
+                    python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
             defaults:
                 run:
@@ -121,7 +121,7 @@ jobs:
                     auto-activate-base: true
 
             -   name: Set up Quantum ESPRESSO
-                run: conda install -y qe=7.4 pip aiida-core
+                run: conda install -y qe pip aiida-core
 
             -   name: Install Python dependencies
                 run: pip install -e .[tests]
