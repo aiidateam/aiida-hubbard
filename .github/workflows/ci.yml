@@ -26,7 +26,7 @@ jobs:
                 python-version: '3.10'
 
         -   name: Install python dependencies
-            run: pip install -e .[pre-commit]
+            run: pip install -e .[pre-commit,tests]
 
         -   name: Run pre-commit
             run: pre-commit run --all-files || ( git status --short ; git diff ; exit 1 )
