@@ -16,5 +16,6 @@ python:
         - docs
 
 sphinx:
-    configuration: docs/source/conf.py
-    fail_on_warning: true
+  builder: html
+  configuration: docs/source/conf.py
+  fail_on_warning: true

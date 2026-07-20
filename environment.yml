@@ -1,16 +1,14 @@
 channels:
   - conda-forge
 dependencies:
-  - qe
+  - qe=7.5
   - python=3.10
   - pip
-  - aiida-core~=2.7
+  - aiida-core==2.8.0
   - xmltodict
   - jupyterlab=3
   - jupyterlab-myst
-  - sphinx~=6.2.1
   - myst-parser~=3.0
-  - sphinx-copybutton~=0.5.2
   - myst-nb~=1.0
   - sphinx-design
   - sphinx-book-theme
