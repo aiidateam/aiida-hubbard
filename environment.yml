@@ -2,7 +2,7 @@ channels:
   - conda-forge
 dependencies:
   - qe
-  - python=3.12
+  - python=3.10
   - pip
   - aiida-core~=2.7
   - xmltodict
