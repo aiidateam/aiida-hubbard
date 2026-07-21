@@ -1,3 +1,21 @@
+## v0.6.0
+
+Minor release to support newer Python versions, and dropping the end-of-life 3.9 Python.
+
+### 📚 Documentation
+
+* :books: Update compatibility in README file  [[64889d8](https://github.com/aiidateam/aiida-hubbard/commit/64889d809c3a552f3d273c66c11738c32e09a08c)]
+
+### ⬆️ Update dependencies
+
+* Python: support 3.13/3.14; drop 3.9  [[cc96d77](https://github.com/aiidateam/aiida-hubbard/commit/cc96d774c03229f6225573e405c14214692610dc)]
+
+### 👌 New contributors
+
+* @liborvojacek has signed the CLA in aiidateam/aiida-hubbard#115 [[8d27b13](https://github.com/aiidateam/aiida-hubbard/commit/8d27b138df4a964e18918f018b063005333b6937)]
+
+
+
 ## v0.5.0
 
 This minor release comes with a relatively important fix for the self-consistent Hubbard parameters workflow. The dynamical assignement of pseudopotentials wrongly assigned pseudoes to some specific species combinations (e.g., `H` with `Hg`, `C` with `Co`, `Cu`). This is now fixed and tested in this version.
