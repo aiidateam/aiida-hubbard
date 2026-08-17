@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """`CalcJob` implementation for the hp.x code of Quantum ESPRESSO."""
+
 from __future__ import annotations
 
 import os
@@ -73,7 +73,7 @@ def validate_qpoints(qpoints, _):
     except AttributeError:
         return 'support for explicit qpoints is not implemented, only meshes'
 
-    if any(i != 0. for i in offset):
+    if any(i != 0.0 for i in offset):
         return 'support for qpoint meshes with non-zero offsets is not implemented'
 
 
@@ -127,7 +127,7 @@ class HpCalculation(CalcJob):
     @classmethod
     def define(cls, spec):
         """Define the process specification."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.inputs['metadata']['options']['input_filename'].default = f'{cls.prefix}.in'
         spec.inputs['metadata']['options']['output_filename'].default = f'{cls.prefix}.out'
@@ -202,40 +202,40 @@ class HpCalculation(CalcJob):
             message='The code failed due an incompatible FFT grid.')
         spec.exit_code(600, 'ERROR_DIVERGING_HUBBARD_PARAMETERS',
             message='The linear response calculation returned diverging parameters.')
-        # yapf: enable
+        # fmt: on
 
     @classproperty
-    def filename_output_hubbard_chi(cls):  # pylint: disable=no-self-argument
+    def filename_output_hubbard_chi(cls):
         """Return the relative output filename that contains chi."""
         return f'{cls.prefix}.chi.dat'
 
     @classproperty
-    def filename_output_hubbard(cls):  # pylint: disable=no-self-argument
+    def filename_output_hubbard(cls):
         """Return the relative output filename that contains the Hubbard values and matrices."""
         return f'{cls.prefix}.Hubbard_parameters.dat'
 
     @classproperty
-    def filename_input_hubbard_parameters(cls):  # pylint: disable=no-self-argument,invalid-name
+    def filename_input_hubbard_parameters(cls):
         """Return the relative input filename for Hubbard parameters, for QuantumESPRESSO version below 7.1."""
         return 'parameters.in'
 
     @classproperty
-    def filename_output_hubbard_dat(cls):  # pylint: disable=no-self-argument,invalid-name
+    def filename_output_hubbard_dat(cls):
         """Return the relative input filename for generalised Hubbard parameters, for QuantumESPRESSO v.7.2 onwards."""
         return 'HUBBARD.dat'
 
     @classproperty
-    def dirname_output(cls):  # pylint: disable=no-self-argument
+    def dirname_output(cls):
         """Return the relative directory name that contains raw output data."""
         return 'out'
 
     @classproperty
-    def dirname_output_hubbard(cls):  # pylint: disable=no-self-argument
+    def dirname_output_hubbard(cls):
         """Return the relative directory name that contains raw output data written by hp.x."""
         return os.path.join(cls.dirname_output, 'HP')
 
     @classproperty
-    def dirname_output_scf(cls):  # pylint: disable=no-self-argument
+    def dirname_output_scf(cls):
         """Return the relative directory name that contains raw output data written by pw.x."""
         return os.path.join(cls.dirname_output, f'{cls.prefix}.save')
 
@@ -258,7 +258,7 @@ class HpCalculation(CalcJob):
         codeinfo = CodeInfo()
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = self.options.output_filename
-        codeinfo.cmdline_params = (list(settings.pop('CMDLINE', [])) + ['-in', self.options.input_filename])
+        codeinfo.cmdline_params = list(settings.pop('CMDLINE', [])) + ['-in', self.options.input_filename]
 
         calcinfo = CalcInfo()
         calcinfo.codes_info = [codeinfo]

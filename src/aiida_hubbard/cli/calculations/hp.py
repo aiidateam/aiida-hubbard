@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Command line scripts to launch a `HpCalculation` for testing and demonstration purposes."""
+
 from aiida.cmdline.params import options, types
 from aiida.cmdline.utils import decorators
 from aiida_quantumespresso.cli.utils import launch
@@ -36,7 +36,7 @@ def launch_calculation(
         'parent_scf': parent_folder,
         'metadata': {
             'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi),
-        }
+        },
     }
 
     if dry_run:

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=no-member,redefined-outer-name
 """Tests for the `HpBaseWorkChain` class."""
+
 from aiida.common import AttributeDict
 from aiida.engine import ProcessHandlerReport
 from plumpy import ProcessState
@@ -100,7 +99,7 @@ def test_handle_unrecoverable_failure(generate_workchain_hp):
         ({'alpha_mix(5)': 0.5}, {'alpha_mix(5)': 0.25}),
         ({'alpha_mix(5)': 0.5, 'alpha_mix(10)': 0.4}, {'alpha_mix(5)': 0.25, 'alpha_mix(10)': 0.2}),
     ),
-)  # yapf: disable
+)  # fmt: skip
 def test_handle_convergence_not_reached(generate_workchain_hp, generate_inputs_hp, inputs, expected):
     """Test `HpBaseWorkChain.handle_convergence_not_reached`."""
     inputs_hp = {'hp': generate_inputs_hp(inputs=inputs)}
@@ -115,7 +114,7 @@ def test_handle_convergence_not_reached(generate_workchain_hp, generate_inputs_h
     assert process.ctx.inputs.parameters['INPUTHP'] == expected
 
 
-# yapf: disable
+# fmt: off
 @pytest.mark.usefixtures('aiida_profile')
 @pytest.mark.parametrize(
     ('cmdline', 'expected'),
@@ -126,7 +125,7 @@ def test_handle_convergence_not_reached(generate_workchain_hp, generate_inputs_h
         (['-nk', '2'], ['-nk', '2', '-nd', '1']),
     ),
 )
-# yapf: enable
+# fmt: on
 def test_handle_computing_cholesky(generate_workchain_hp, generate_inputs_hp, cmdline, expected):
     """Test `HpBaseWorkChain.handle_computing_cholesky`."""
     from aiida.orm import Dict

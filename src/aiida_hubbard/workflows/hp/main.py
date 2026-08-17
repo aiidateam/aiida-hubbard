@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Work chain to run a Quantum ESPRESSO hp.x calculation."""
+
 from aiida import orm
 from aiida.common import AttributeDict
 from aiida.engine import ToContext, WorkChain, if_
@@ -32,7 +32,7 @@ class HpWorkChain(WorkChain, ProtocolMixin):
     @classmethod
     def define(cls, spec):
         """Define the process specification."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.expose_inputs(HpBaseWorkChain, exclude=('clean_workdir', 'only_initialization', 'hp.qpoints'))
         spec.input('clean_workdir', valid_type=orm.Bool, default=lambda: orm.Bool(False),
@@ -65,6 +65,7 @@ class HpWorkChain(WorkChain, ProtocolMixin):
             message=('Neither the `qpoints` nor the `qpoints_distance`, '
                 'or the `hp.hubbard_structure` input were specified.'))
         spec.exit_code(300, 'ERROR_CHILD_WORKCHAIN_FAILED', message='A child work chain failed.')
+        # fmt: on
 
     @classmethod
     def get_protocol_filepath(cls):
@@ -72,6 +73,7 @@ class HpWorkChain(WorkChain, ProtocolMixin):
         from importlib_resources import files
 
         from ..protocols import hp as hp_protocols
+
         return files(hp_protocols) / 'main.yaml'
 
     @classmethod
@@ -88,7 +90,7 @@ class HpWorkChain(WorkChain, ProtocolMixin):
         """
         inputs = cls.get_protocol_inputs(protocol, overrides)
 
-        data = HpBaseWorkChain.get_builder_from_protocol(  # pylint: disable=protected-access
+        data = HpBaseWorkChain.get_builder_from_protocol(
             code, protocol=protocol, parent_scf_folder=parent_scf_folder, overrides=inputs, options=options, **_
         )._data
 
@@ -111,7 +113,7 @@ class HpWorkChain(WorkChain, ProtocolMixin):
             data['max_concurrent_base_workchains'] = orm.Int(inputs['max_concurrent_base_workchains'])
 
         builder = cls.get_builder()
-        builder._data = data  # pylint: disable=protected-access
+        builder._data = data
         builder.clean_workdir = orm.Bool(inputs['clean_workdir'])
 
         return builder
@@ -138,11 +140,9 @@ class HpWorkChain(WorkChain, ProtocolMixin):
                     'structure': self.inputs.hp.hubbard_structure,
                     'distance': self.inputs.qpoints_distance,
                     'force_parity': self.inputs.get('qpoints_force_parity', orm.Bool(False)),
-                    'metadata': {
-                        'call_link_label': 'create_qpoints_from_distance'
-                    }
+                    'metadata': {'call_link_label': 'create_qpoints_from_distance'},
                 }
-                qpoints = create_kpoints_from_distance(**inputs)  # pylint: disable=unexpected-keyword-arg
+                qpoints = create_kpoints_from_distance(**inputs)
             else:
                 return self.exit_codes.ERROR_INVALID_INPUT_QPOINTS
 
@@ -195,10 +195,10 @@ class HpWorkChain(WorkChain, ProtocolMixin):
         for called_descendant in self.node.called_descendants:
             if isinstance(called_descendant, orm.CalcJobNode):
                 try:
-                    called_descendant.outputs.remote_folder._clean()  # pylint: disable=protected-access
+                    called_descendant.outputs.remote_folder._clean()
                     cleaned_calcs.append(called_descendant.pk)
                 except (IOError, OSError, KeyError):
                     pass
 
         if cleaned_calcs:
-            self.report(f"cleaned remote folders of calculations: {' '.join(map(str, cleaned_calcs))}")
+            self.report(f'cleaned remote folders of calculations: {" ".join(map(str, cleaned_calcs))}')

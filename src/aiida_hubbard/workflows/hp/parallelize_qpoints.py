@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Work chain to launch a Quantum Espresso hp.x calculation parallelizing over the Hubbard atoms."""
+
 from aiida import orm
 from aiida.common import AttributeDict
 from aiida.engine import WorkChain, while_
@@ -21,12 +21,12 @@ def validate_inputs(inputs, _):
 
 
 class HpParallelizeQpointsWorkChain(WorkChain):
-    """Work chain to launch a Quantum Espresso hp.x calculation parallelizing over the q points on a single Hubbard atom."""  # pylint: disable=line-too-long
+    """Work chain to launch a Quantum Espresso hp.x calculation parallelizing over the q points on a single Hubbard atom."""
 
     @classmethod
     def define(cls, spec):
         """Define the process specification."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.expose_inputs(HpBaseWorkChain, exclude=('only_initialization', 'clean_workdir'))
         spec.input('max_concurrent_base_workchains', valid_type=orm.Int, required=False)
@@ -54,6 +54,7 @@ class HpParallelizeQpointsWorkChain(WorkChain):
             message='The child work chain failed.')
         spec.exit_code(302, 'ERROR_FINAL_WORKCHAIN_FAILED',
             message='The child work chain failed.')
+        # fmt: on
 
     def run_init(self):
         """Run an initialization `HpBaseWorkChain` that will determine the number of perturbations (q points).
@@ -67,7 +68,7 @@ class HpParallelizeQpointsWorkChain(WorkChain):
         inputs.hp.parameters = orm.Dict(parameters)
         inputs.clean_workdir = self.inputs.clean_workdir
 
-        inputs.hp.metadata.options.max_wallclock_seconds =  self.inputs.init_walltime
+        inputs.hp.metadata.options.max_wallclock_seconds = self.inputs.init_walltime
         inputs.metadata.call_link_label = 'initialization'
 
         node = self.submit(HpBaseWorkChain, **inputs)
@@ -90,15 +91,19 @@ class HpParallelizeQpointsWorkChain(WorkChain):
 
     def run_qpoints(self):
         """Run a separate `HpBaseWorkChain` for each of the q points."""
-        n_base_parallel = self.inputs.max_concurrent_base_workchains.value if 'max_concurrent_base_workchains' in self.inputs else len(self.ctx.qpoints)
+        n_base_parallel = (
+            self.inputs.max_concurrent_base_workchains.value
+            if 'max_concurrent_base_workchains' in self.inputs
+            else len(self.ctx.qpoints)
+        )
 
         for _ in self.ctx.qpoints[:n_base_parallel]:
             qpoint_index = self.ctx.qpoints.pop(0)
-            key = f'qpoint_{qpoint_index + 1}' # to keep consistency with QE
+            key = f'qpoint_{qpoint_index + 1}'  # to keep consistency with QE
             inputs = AttributeDict(self.exposed_inputs(HpBaseWorkChain))
             inputs.clean_workdir = self.inputs.clean_workdir
             inputs.hp.parameters = inputs.hp.parameters.get_dict()
-            inputs.hp.parameters['INPUTHP']['start_q'] = qpoint_index + 1 # QuantumESPRESSO starts from 1
+            inputs.hp.parameters['INPUTHP']['start_q'] = qpoint_index + 1  # QuantumESPRESSO starts from 1
             inputs.hp.parameters['INPUTHP']['last_q'] = qpoint_index + 1
             inputs.hp.parameters = orm.Dict(dict=inputs.hp.parameters)
             inputs.metadata.call_link_label = key
@@ -121,7 +126,7 @@ class HpParallelizeQpointsWorkChain(WorkChain):
         inputs = AttributeDict(self.exposed_inputs(HpBaseWorkChain))
         inputs.hp.parent_scf = inputs.hp.parent_scf
         inputs.hp.parent_hp = {key: wc.outputs.retrieved for key, wc in self.ctx.items() if key.startswith('qpoint_')}
-        inputs.hp.metadata.options.max_wallclock_seconds = 3600 # 1 hour is more than enough
+        inputs.hp.metadata.options.max_wallclock_seconds = 3600  # 1 hour is more than enough
         inputs.metadata.call_link_label = 'compute_chi'
 
         node = self.submit(HpBaseWorkChain, **inputs)
@@ -153,10 +158,10 @@ class HpParallelizeQpointsWorkChain(WorkChain):
         for called_descendant in self.node.called_descendants:
             if isinstance(called_descendant, orm.CalcJobNode):
                 try:
-                    called_descendant.outputs.remote_folder._clean()  # pylint: disable=protected-access
+                    called_descendant.outputs.remote_folder._clean()
                     cleaned_calcs.append(called_descendant.pk)
                 except (IOError, OSError, KeyError):
                     pass
 
         if cleaned_calcs:
-            self.report(f"cleaned remote folders of calculations: {' '.join(map(str, cleaned_calcs))}")
+            self.report(f'cleaned remote folders of calculations: {" ".join(map(str, cleaned_calcs))}')

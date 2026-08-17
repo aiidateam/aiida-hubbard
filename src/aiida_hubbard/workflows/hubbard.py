@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Turn-key solution to automatically compute the self-consistent Hubbard parameters for a given structure."""
+
 from __future__ import annotations
 
 from aiida import orm
@@ -26,7 +26,7 @@ HpWorkChain = WorkflowFactory('quantumespresso.hp.main')
 
 
 def get_separated_parameters(
-    hubbard_parameters: list[tuple[int, str, int, str, float, tuple[int, int, int], str]]
+    hubbard_parameters: list[tuple[int, str, int, str, float, tuple[int, int, int], str]],
 ) -> tuple[list, list]:
     """Return a tuple with onsites and intersites parameters separated.
 
@@ -92,18 +92,20 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
     :class:`~aiida_quantumespresso.data.hubbard_structure.HubbardStructureData`.
     """
 
-    defaults = AttributeDict({
-        'qe': qe_defaults,
-        'smearing_method': 'cold',
-        'smearing_degauss': 0.01,
-        'conv_thr_preconverge': 1E-10,
-        'conv_thr_strictfinal': 1E-15,
-    })
+    defaults = AttributeDict(
+        {
+            'qe': qe_defaults,
+            'smearing_method': 'cold',
+            'smearing_degauss': 0.01,
+            'conv_thr_preconverge': 1e-10,
+            'conv_thr_strictfinal': 1e-15,
+        }
+    )
 
     @classmethod
     def define(cls, spec):
         """Define the specifications of the process."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.input('hubbard_structure', valid_type=HubbardStructureData,
             help=('The HubbardStructureData containing the initialized parameters for triggering '
@@ -187,7 +189,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
 
         spec.exit_code(601, 'ERROR_CONVERGENCE_NOT_REACHED',
             message='The Hubbard parameters did not converge at the last iteration #{iteration}')
-        # yapf: enable
+        # fmt: on
 
     @classmethod
     def get_protocol_filepath(cls):
@@ -195,6 +197,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         from importlib_resources import files
 
         from . import protocols
+
         return files(protocols) / 'hubbard.yaml'
 
     @classmethod
@@ -207,7 +210,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         overrides=None,
         options_pw=None,
         options_hp=None,
-        **kwargs
+        **kwargs,
     ):
         """Return a builder prepopulated with inputs selected according to the chosen protocol.
 
@@ -309,17 +312,21 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
             return False
 
         if self.ctx.iteration <= self.ctx.skip_relax_iterations:
-            self.report((
-                f'`skip_relax_iterations` is set to {self.ctx.skip_relax_iterations}. '
-                f'Skipping relaxation for iteration {self.ctx.iteration}.'
-            ))
+            self.report(
+                (
+                    f'`skip_relax_iterations` is set to {self.ctx.skip_relax_iterations}. '
+                    f'Skipping relaxation for iteration {self.ctx.iteration}.'
+                )
+            )
             return False
 
         if self.ctx.iteration % self.ctx.relax_frequency != 0:
-            self.report((
-                f'`relax_frequency` is set to {self.ctx.relax_frequency}. '
-                f'Skipping relaxation for iteration {self.ctx.iteration}.'
-            ))
+            self.report(
+                (
+                    f'`relax_frequency` is set to {self.ctx.relax_frequency}. '
+                    f'Skipping relaxation for iteration {self.ctx.iteration}.'
+                )
+            )
             return False
 
         return True
@@ -330,10 +337,12 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
             return False
 
         if self.ctx.iteration <= self.ctx.skip_relax_iterations:
-            self.report((
-                f'`skip_relax_iterations` is set to {self.ctx.skip_relax_iterations}. '
-                f'Skipping convergence check for iteration {self.ctx.iteration}.'
-            ))
+            self.report(
+                (
+                    f'`skip_relax_iterations` is set to {self.ctx.skip_relax_iterations}. '
+                    f'Skipping convergence check for iteration {self.ctx.iteration}.'
+                )
+            )
             return False
 
         return True
@@ -416,7 +425,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         for kind in self.ctx.current_hubbard_structure.kinds:
             for key, pseudo in pseudos.items():
                 symbol = re.sub(r'\d', '', key)
-                if re.fullmatch(fr'{re.escape(kind.symbol)}\d*', symbol):
+                if re.fullmatch(rf'{re.escape(kind.symbol)}\d*', symbol):
                     results[kind.name] = pseudo
                     break
             else:
@@ -433,8 +442,9 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
                 if not site['type'] == site['new_type']:
                     try:
                         result = structure_relabel_kinds(
-                            self.ctx.current_hubbard_structure, workchain.outputs.hubbard,
-                            self.ctx.current_magnetic_moments
+                            self.ctx.current_hubbard_structure,
+                            workchain.outputs.hubbard,
+                            self.ctx.current_magnetic_moments,
                         )
                     except ValueError:
                         return self.exit_codes.ERROR_RELABELLING_KINDS
@@ -503,19 +513,25 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         nbnd = previous_parameters.get_dict()['number_of_bands']
         conv_thr = inputs.pw.parameters['ELECTRONS'].get('conv_thr', self.defaults.conv_thr_strictfinal)
 
-        inputs.pw.parameters['CONTROL'].update({
-            'calculation': 'scf',
-            'restart_mode': 'from_scratch',  # important
-        })
-        inputs.pw.parameters['SYSTEM'].update({
-            'nbnd': nbnd,
-            'occupations': 'fixed',
-        })
-        inputs.pw.parameters['ELECTRONS'].update({
-            'conv_thr': conv_thr,
-            'startingpot': 'file',
-            'startingwfc': 'file',
-        })
+        inputs.pw.parameters['CONTROL'].update(
+            {
+                'calculation': 'scf',
+                'restart_mode': 'from_scratch',  # important
+            }
+        )
+        inputs.pw.parameters['SYSTEM'].update(
+            {
+                'nbnd': nbnd,
+                'occupations': 'fixed',
+            }
+        )
+        inputs.pw.parameters['ELECTRONS'].update(
+            {
+                'conv_thr': conv_thr,
+                'startingpot': 'file',
+                'startingwfc': 'file',
+            }
+        )
 
         for key in ['degauss', 'smearing', 'starting_magnetization']:
             inputs.pw.parameters['SYSTEM'].pop(key, None)
@@ -574,7 +590,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         # to the format of the BandsData. To double check if actually needed.
         try:
             is_insulator_2, _ = find_bandgap(bands, number_electrons=number_electrons)
-        except:  # pylint: disable=bare-except
+        except Exception:
             is_insulator_2 = False
 
         if is_insulator_1 or is_insulator_2:
@@ -717,10 +733,10 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         for called_descendant in self.node.called_descendants:
             if isinstance(called_descendant, orm.CalcJobNode):
                 try:
-                    called_descendant.outputs.remote_folder._clean()  # pylint: disable=protected-access
+                    called_descendant.outputs.remote_folder._clean()
                     cleaned_calcs.append(called_descendant.pk)
                 except (IOError, OSError, KeyError):
                     pass
 
         if cleaned_calcs:
-            self.report(f"cleaned remote folders of calculations: {' '.join(map(str, cleaned_calcs))}")
+            self.report(f'cleaned remote folders of calculations: {" ".join(map(str, cleaned_calcs))}')

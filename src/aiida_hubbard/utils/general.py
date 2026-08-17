@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """General utilies."""
+
 from __future__ import annotations
 
 from typing import List

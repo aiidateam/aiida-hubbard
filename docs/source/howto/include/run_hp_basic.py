@@ -1,6 +1,6 @@
 #!/usr/bin/env runaiida
-# -*- coding: utf-8 -*-
 """Example running a pw.x and hp.x in a squence."""
+
 from aiida.engine import run
 from aiida.orm import Dict, KpointsData, StructureData, load_code, load_group
 from aiida_quantumespresso.data.hubbard_structure import HubbardStructureData
@@ -40,15 +40,15 @@ pw_builder.pseudos = pseudo_family.get_pseudos(structure=structure)
 # for the given structure and energy units.
 cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structure, unit='Ry')
 
-parameters = Dict({
-    'CONTROL': {
-        'calculation': 'scf'
-    },
-    'SYSTEM': {
-        'ecutwfc': cutoff_wfc,
-        'ecutrho': cutoff_rho,
+parameters = Dict(
+    {
+        'CONTROL': {'calculation': 'scf'},
+        'SYSTEM': {
+            'ecutwfc': cutoff_wfc,
+            'ecutrho': cutoff_rho,
+        },
     }
-})
+)
 pw_builder.parameters = parameters
 
 # Generate a 2x2x2 Monkhorst-Pack mesh
@@ -79,11 +79,11 @@ hp_builder = hp_code.get_builder()
 parent_scf = pw_node.outputs.remote_folder
 hp_builder.parent_scf = parent_scf
 
-parameters = Dict({
-    'INPUTHP': {
-        'conv_thr_chi': 1.0e-3
-    },
-})
+parameters = Dict(
+    {
+        'INPUTHP': {'conv_thr_chi': 1.0e-3},
+    }
+)
 hp_builder.parameters = parameters
 
 # Generate a 1x1x1 Monkhorst-Pack mesh

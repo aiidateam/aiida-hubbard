@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for CLI commands."""
+
 from __future__ import annotations
 
 import subprocess

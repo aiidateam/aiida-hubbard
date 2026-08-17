@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for the :mod:`aiida_hubbard.utils.validation` module."""
+
 from aiida import orm
 import pytest
 
@@ -40,26 +40,16 @@ def test_validate_parent_calculation_raises(generate_calc_job_node, generate_str
         validate_parent_calculation(node)
 
     inputs = {
-        'parameters': orm.Dict(dict={'SYSTEM': {
-            'lda_plus_u': True,
-            'hubbard_u': {
-                'O': 1.0
-            }
-        }}),
-        'structure': generate_structure()
+        'parameters': orm.Dict(dict={'SYSTEM': {'lda_plus_u': True, 'hubbard_u': {'O': 1.0}}}),
+        'structure': generate_structure(),
     }
     node = generate_calc_job_node('quantumespresso.pw', inputs=inputs)
     with pytest.raises(ValueError, match=r'the structure does not have the right kind order'):
         validate_parent_calculation(node)
 
     inputs = {
-        'parameters': orm.Dict(dict={'SYSTEM': {
-            'lda_plus_u': True,
-            'hubbard_u': {
-                'Si': 1.0
-            }
-        }}),
-        'structure': generate_structure()
+        'parameters': orm.Dict(dict={'SYSTEM': {'lda_plus_u': True, 'hubbard_u': {'Si': 1.0}}}),
+        'structure': generate_structure(),
     }
     node = generate_calc_job_node('quantumespresso.pw', inputs=inputs)
     validate_parent_calculation(node)

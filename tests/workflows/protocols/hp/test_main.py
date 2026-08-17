@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for the ``HpWorkChain.get_builder_from_protocol`` method."""
+
 from aiida.engine import ProcessBuilder
 
 from aiida_hubbard.workflows.hp.main import HpWorkChain

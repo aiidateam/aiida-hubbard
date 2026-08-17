@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for the ``SelfConsistentHubbardWorkChain.get_builder_from_protocol`` method."""
+
 from aiida.engine import ProcessBuilder
 import pytest
 
@@ -31,29 +31,16 @@ def test_default(fixture_code, data_regression, generate_hubbard_structure, seri
 
 
 @pytest.mark.parametrize(
-    'overrides', (
-        {
-            'tolerance_onsite': 1
-        },
-        {
-            'tolerance_intersite': 1
-        },
-        {
-            'skip_relax_iterations': 2
-        },
-        {
-            'relax_frequency': 3
-        },
-        {
-            'max_iterations': 1
-        },
-        {
-            'meta_convergence': False
-        },
-        {
-            'clean_workdir': False
-        },
-    )
+    'overrides',
+    (
+        {'tolerance_onsite': 1},
+        {'tolerance_intersite': 1},
+        {'skip_relax_iterations': 2},
+        {'relax_frequency': 3},
+        {'max_iterations': 1},
+        {'meta_convergence': False},
+        {'clean_workdir': False},
+    ),
 )
 def test_overrides(fixture_code, generate_hubbard_structure, overrides):
     """Test specifying different``overrides`` for the ``get_builder_from_protocol()`` method."""

@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Work chain to launch a Quantum Espresso hp.x calculation parallelizing over the Hubbard atoms."""
+
 from aiida import orm
 from aiida.common import AttributeDict
 from aiida.engine import WorkChain, while_
@@ -19,7 +19,7 @@ class HpParallelizeAtomsWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
         """Define the process specification."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.expose_inputs(HpBaseWorkChain, exclude=('only_initialization', 'clean_workdir'))
         spec.input('parallelize_qpoints', valid_type=orm.Bool, default=lambda: orm.Bool(False))
@@ -48,7 +48,7 @@ class HpParallelizeAtomsWorkChain(WorkChain):
             message='The child work chain failed.')
         spec.exit_code(302, 'ERROR_FINAL_WORKCHAIN_FAILED',
             message='The child work chain failed.')
-
+        # fmt: on
 
     def run_init(self):
         """Run an initialization `HpBaseWorkChain` to that will determine which kinds need to be perturbed.
@@ -91,7 +91,7 @@ class HpParallelizeAtomsWorkChain(WorkChain):
         if 'max_concurrent_base_workchains' in self.inputs:
             max_concurrent_base_workchains_sites = distribute_base_workchains(
                 len(self.ctx.hubbard_sites), self.inputs.max_concurrent_base_workchains.value
-                )
+            )
 
         for max_concurrent_base_workchains_site in max_concurrent_base_workchains_sites:
             site_index, site_kind = self.ctx.hubbard_sites.pop(0)
@@ -124,7 +124,7 @@ class HpParallelizeAtomsWorkChain(WorkChain):
         inputs = AttributeDict(self.exposed_inputs(HpBaseWorkChain))
         inputs.hp.parent_scf = inputs.hp.parent_scf
         inputs.hp.parent_hp = {key: wc.outputs.retrieved for key, wc in self.ctx.items() if key.startswith('atom_')}
-        inputs.hp.metadata.options.max_wallclock_seconds =  3600 # 1 hour is more than enough
+        inputs.hp.metadata.options.max_wallclock_seconds = 3600  # 1 hour is more than enough
         inputs.metadata.call_link_label = 'compute_hp'
 
         node = self.submit(HpBaseWorkChain, **inputs)
@@ -156,10 +156,10 @@ class HpParallelizeAtomsWorkChain(WorkChain):
         for called_descendant in self.node.called_descendants:
             if isinstance(called_descendant, orm.CalcJobNode):
                 try:
-                    called_descendant.outputs.remote_folder._clean()  # pylint: disable=protected-access
+                    called_descendant.outputs.remote_folder._clean()
                     cleaned_calcs.append(called_descendant.pk)
                 except (IOError, OSError, KeyError):
                     pass
 
         if cleaned_calcs:
-            self.report(f"cleaned remote folders of calculations: {' '.join(map(str, cleaned_calcs))}")
+            self.report(f'cleaned remote folders of calculations: {" ".join(map(str, cleaned_calcs))}')

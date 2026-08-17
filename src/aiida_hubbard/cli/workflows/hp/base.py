@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Command line scripts to launch a `HpBaseWorkChain` for testing and demonstration purposes."""
+
 from aiida.cmdline.params import options, types
 from aiida.cmdline.utils import decorators
 from aiida_quantumespresso.cli.utils import launch

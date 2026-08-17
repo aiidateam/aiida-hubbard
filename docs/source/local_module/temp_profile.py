@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Load and populate a temporary profile with a computer and code."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -18,8 +18,9 @@ import psutil
 
 
 @dataclass
-class AiiDALoaded: # pylint: disable=too-many-instance-attributes
+class AiiDALoaded:  # pylint: disable=too-many-instance-attributes
     """Dataclass for loading an AiiDA profile with predefined nodes."""
+
     profile: manage.Profile
     computer: orm.Computer | None
     pw_code: orm.Code | None
@@ -69,7 +70,6 @@ def load_temp_profile(
     profile = get_profile()
 
     if not (profile and profile.name == name):
-
         if wipe_previous and repo_path.exists():
             shutil.rmtree(repo_path)
         if wipe_previous and workdir_path.exists():
@@ -135,7 +135,7 @@ def load_pw_code(computer, exec_path: pathlib.Path):
     """Idempotent function to add the code to the database."""
     try:
         code = orm.load_code('pw@localhost')
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         code = orm.Code(
             input_plugin_name='quantumespresso.pw',
             remote_computer_exec=[computer, str(exec_path)],
@@ -151,7 +151,7 @@ def load_hp_code(computer, exec_path: pathlib.Path):
     """Idempotent function to add the code to the database."""
     try:
         code = orm.load_code('hp@localhost')
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         code = orm.Code(
             input_plugin_name='quantumespresso.hp',
             remote_computer_exec=[computer, str(exec_path)],
@@ -187,7 +187,7 @@ def load_sssp_pseudos(version='1.3', functional='PBEsol', protocol='efficiency')
 
     try:
         family = orm.Group.collection.get(label=label)
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         pseudos = pathlib.Path(__file__).parent / 'sssp_pseudos'
         pseudos.mkdir(exist_ok=True)
 
@@ -203,8 +203,8 @@ def load_sssp_pseudos(version='1.3', functional='PBEsol', protocol='efficiency')
         )
         family.set_cutoffs(
             {
-                k: {i: v[i] for i in ['cutoff_wfc', 'cutoff_rho']
-                    } for k, v in json.loads((pseudos / (filename + '.json')).read_text()).items()
+                k: {i: v[i] for i in ['cutoff_wfc', 'cutoff_rho']}
+                for k, v in json.loads((pseudos / (filename + '.json')).read_text()).items()
             },
             'normal',
             unit='Ry',

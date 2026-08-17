@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Calculation function to relabel the kinds of a Hubbard structure."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -70,7 +70,7 @@ def structure_relabel_kinds(
             raise ValueError('cannot distinguish kinds with the given Hubbard input configuration') from exc
 
     # Now add the non-Hubbard sites
-    for site in sites[len(relabeled.sites):]:
+    for site in sites[len(relabeled.sites) :]:
         symbols = hubbard_structure.get_kind(site.kind_name).symbols
         names = hubbard_structure.get_kind(site.kind_name).name
         relabeled.append_atom(position=site.position, symbols=symbols, name=names)
@@ -94,5 +94,6 @@ def get_relabelled_symbol(symbol: str, counter: int) -> str:
     :return: a 3 digit length symbol (QuantumESPRESSO allows only up to 3)
     """
     from string import ascii_uppercase, digits
+
     suffix = (digits + ascii_uppercase)[counter]
     return f'{symbol}{suffix}'

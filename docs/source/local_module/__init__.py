@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """A module of code related to the tutorial."""
+
 import os
 import pathlib
 import warnings
@@ -10,6 +10,6 @@ with warnings.catch_warnings():
     warnings.simplefilter('ignore', UserWarning)
     from aiida.manage.configuration import settings
 
-    settings # pylint: disable=pointless-statement
+    settings  # pylint: disable=pointless-statement
 
 from .temp_profile import load_temp_profile  # pylint: disable=wrong-import-position

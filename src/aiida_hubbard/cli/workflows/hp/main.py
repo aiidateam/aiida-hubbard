@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Command line scripts to launch a `HpWorkChain` for testing and demonstration purposes."""
 
 from aiida.cmdline.params import options, types
@@ -25,12 +24,20 @@ from .. import cmd_launch
     is_flag=True,
     default=False,
     show_default=True,
-    help='Parallelize the linear response calculation over the Hubbard atoms.'
+    help='Parallelize the linear response calculation over the Hubbard atoms.',
 )
 @decorators.with_dbenv()
 def launch_workflow(
-    code, kpoints_mesh, parent_folder, max_num_machines, max_wallclock_seconds, with_mpi, clean_workdir,
-    parallelize_atoms, daemon, dry_run
+    code,
+    kpoints_mesh,
+    parent_folder,
+    max_num_machines,
+    max_wallclock_seconds,
+    with_mpi,
+    clean_workdir,
+    parallelize_atoms,
+    daemon,
+    dry_run,
 ):
     """Run a `HpWorkChain`."""
     from aiida import orm
