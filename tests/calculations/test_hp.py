@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for the `HpCalculation` class."""
+
 import os
 
 from aiida import orm
@@ -60,33 +60,27 @@ def test_settings(fixture_sandbox_folder, generate_calc_job, generate_inputs_hp)
     assert calc_info.codes_info[0].cmdline_params == cmdline_params + ['-in', 'aiida.in']
 
 
-@pytest.mark.parametrize(('parameters', 'match'), (
-    ({
-        'nq1': 1
-    }, r'explicit definition of flag `nq1` in namelist `.*` is not allowed'),
+@pytest.mark.parametrize(
+    ('parameters', 'match'),
     (
-        {
-            'compute_hp': True,
-            'use_parent_hp': False,
-            'use_hubbard_structure': False
-        },
+        ({'nq1': 1}, r'explicit definition of flag `nq1` in namelist `.*` is not allowed'),
         (
-            r'parameter `INPUTHP.compute_hp` is `True` but no parent folders '
-            r'defined in `parent_hp` or no `hubbard_structure` in inputs'
+            {'compute_hp': True, 'use_parent_hp': False, 'use_hubbard_structure': False},
+            (
+                r'parameter `INPUTHP.compute_hp` is `True` but no parent folders '
+                r'defined in `parent_hp` or no `hubbard_structure` in inputs'
+            ),
+        ),
+        (
+            {'determine_q_mesh_only': True},
+            r'parameter `INPUTHP.determine_q_mesh_only` is `True` but `INPUTHP.perturb_only_atom` is not set',
+        ),
+        (
+            {'determine_q_mesh_only': True, 'determine_num_pert_only': True, 'use_hubbard_structure': True},
+            r'parameter `INPUTHP.determine_q_mesh_only` is `True` but `INPUTHP.determine_num_pert_only` is `True` as well',
         ),
     ),
-    (
-        {
-            'determine_q_mesh_only': True
-        },
-        r'parameter `INPUTHP.determine_q_mesh_only` is `True` but `INPUTHP.perturb_only_atom` is not set',
-    ),
-    ({
-        'determine_q_mesh_only': True,
-        'determine_num_pert_only': True,
-        'use_hubbard_structure': True
-    }, r'parameter `INPUTHP.determine_q_mesh_only` is `True` but `INPUTHP.determine_num_pert_only` is `True` as well'),
-))
+)
 def test_invalid_parameters(
     fixture_sandbox_folder,
     generate_calc_job,

@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Parser implementation for the `HpCalculation` plugin."""
+
 import os
 
 from aiida import orm
@@ -15,7 +15,7 @@ class HpParser(Parser):
 
     def parse(self, **kwargs):
         """Parse the contents of the output files retrieved in the `FolderData`."""
-        self.exit_code_stdout = None  # pylint: disable=attribute-defined-outside-init
+        self.exit_code_stdout = None
 
         try:
             self.retrieved
@@ -38,7 +38,6 @@ class HpParser(Parser):
         # This check is needed since the `hp.x` routine will print the `{prefix}.Hubbard_parameters.dat`
         # also when it is only initialized.
         if not self.is_initialization_only and not self.is_partial_mesh:
-
             for parse_method in [
                 self.parse_hubbard,
                 self.parse_hubbard_chi,
@@ -114,7 +113,7 @@ class HpParser(Parser):
 
         try:
             parsed_data, logs = parse_raw_output(stdout)
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             return self.exit_codes.ERROR_OUTPUT_STDOUT_PARSE
 
         self.out('parameters', orm.Dict(parsed_data))
@@ -122,7 +121,7 @@ class HpParser(Parser):
         # If the stdout was incomplete, most likely the job was interrupted before it could cleanly finish, so the
         # output files are most likely corrupt and cannot be restarted from
         if 'ERROR_OUTPUT_STDOUT_INCOMPLETE' in logs['error']:
-            self.exit_code_stdout = self.exit_codes.ERROR_OUTPUT_STDOUT_INCOMPLETE  # pylint: disable=attribute-defined-outside-init
+            self.exit_code_stdout = self.exit_codes.ERROR_OUTPUT_STDOUT_INCOMPLETE
 
         return logs
 
@@ -210,6 +209,7 @@ class HpParser(Parser):
         """
         from aiida_quantumespresso.common.hubbard import Hubbard
         from aiida_quantumespresso.utils.hubbard import HubbardUtils
+
         filename = HpCalculation.filename_output_hubbard_dat
 
         filepath = os.path.join(folder_path, filename)
@@ -293,7 +293,7 @@ class HpParser(Parser):
 
         for matrix_name in ('chi0', 'chi'):
             matrix_block = blocks[matrix_name]
-            matrix_data = data[matrix_block[0]:matrix_block[1]]
+            matrix_data = data[matrix_block[0] : matrix_block[1]]
             matrix = np.array(self.parse_hubbard_matrix(matrix_data))
             result[matrix_name] = matrix
 
@@ -317,7 +317,6 @@ class HpParser(Parser):
         }
 
         for line_number, line in enumerate(data):
-
             if 'site n.' in line:
                 parsed = False
                 subline_number = line_number + 1
@@ -332,16 +331,18 @@ class HpParser(Parser):
                         except ValueError as exc:
                             raise ValueError(f'could not parse `{subdata[7]}` value from line `{subline}`') from exc
 
-                        result['hubbard_U']['sites'].append({
-                            'index': int(subdata[0]) - 1,  # QE indices start from 1
-                            'type': int(subdata[1]),
-                            'kind': subdata[2],
-                            'spin': int(subdata[3]),
-                            'new_type': int(subdata[4]),
-                            'new_kind': subdata[5],
-                            'manifold': subdata[6],
-                            'value': value,
-                        })
+                        result['hubbard_U']['sites'].append(
+                            {
+                                'index': int(subdata[0]) - 1,  # QE indices start from 1
+                                'type': int(subdata[1]),
+                                'kind': subdata[2],
+                                'spin': int(subdata[3]),
+                                'new_type': int(subdata[4]),
+                                'new_kind': subdata[5],
+                                'manifold': subdata[6],
+                                'value': value,
+                            }
+                        )
                     else:
                         parsed = True
 
@@ -373,7 +374,7 @@ class HpParser(Parser):
 
         for matrix_name in ('chi0', 'chi', 'chi0_inv', 'chi_inv', 'hubbard'):
             matrix_block = blocks[matrix_name]
-            matrix_data = data[matrix_block[0]:matrix_block[1]]
+            matrix_data = data[matrix_block[0] : matrix_block[1]]
             matrix = self.parse_hubbard_matrix(matrix_data)
 
             if len(set(matrix.shape)) != 1:

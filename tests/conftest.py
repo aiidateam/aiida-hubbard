@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=redefined-outer-name, too-many-statements
 """Initialise a text database and profile for pytest."""
+
 from collections.abc import Mapping
 import io
 import os
@@ -10,7 +9,7 @@ import tempfile
 
 import pytest
 
-pytest_plugins = ['aiida.manage.tests.pytest_fixtures']  # pylint: disable=invalid-name
+pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
 
 
 @pytest.fixture(scope='session')
@@ -34,6 +33,7 @@ def filepath_fixtures(filepath_tests):
 def fixture_sandbox_folder():
     """Return a `SandboxFolder`."""
     from aiida.common.folders import SandboxFolder
+
     with SandboxFolder() as folder:
         yield folder
 
@@ -78,7 +78,6 @@ def serialize_builder():
     """
 
     def serialize_data(data):
-        # pylint: disable=too-many-return-statements
         from aiida.orm import AbstractCode, BaseType, Data, Dict, KpointsData, List, RemoteData, SinglefileData
         from aiida.plugins import DataFactory
 
@@ -121,12 +120,12 @@ def serialize_builder():
             return data.get_content()
 
         if isinstance(data, Data):
-            return data.base.caching._get_hash()  # pylint: disable=protected-access
+            return data.base.caching._get_hash()
 
         return data
 
     def _serialize_builder(builder):
-        return serialize_data(builder._inputs(prune=True))  # pylint: disable=protected-access
+        return serialize_data(builder._inputs(prune=True))
 
     return _serialize_builder
 
@@ -146,7 +145,6 @@ def sssp(aiida_profile, generate_upf_data):
 
     with tempfile.TemporaryDirectory() as dirpath:
         for values in elements.values():
-
             element = values['symbol']
 
             actinides = ('Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr')
@@ -243,7 +241,7 @@ def generate_calc_job_node(aiida_localhost):
 
         if test_name is not None:
             basepath = os.path.dirname(os.path.abspath(__file__))
-            filename = os.path.join(entry_point_name[len('quantumespresso.'):], test_name)
+            filename = os.path.join(entry_point_name[len('quantumespresso.') :], test_name)
             filepath_folder = os.path.join(basepath, 'parsers', 'fixtures', filename)
 
         entry_point = format_entry_point_string('aiida.calculations', entry_point_name)
@@ -339,11 +337,11 @@ def generate_structure():
         if structure_id is None:
             sites = [('Si', 'Si')]
 
-            cell = [[1., 1., 0], [1., 0, 1.], [0, 1., 1.]]
+            cell = [[1.0, 1.0, 0], [1.0, 0, 1.0], [0, 1.0, 1.0]]
             structure = StructureData(cell=cell)
 
             for kind, symbol in sites:
-                structure.append_atom(position=(0., 0., 0.), symbols=symbol, name=kind)
+                structure.append_atom(position=(0.0, 0.0, 0.0), symbols=symbol, name=kind)
 
         if structure_id == 'licoo2':
             # LiCoO2 structure used in several QuantumESPRESSO HP examples.
@@ -360,8 +358,15 @@ def generate_structure():
             # Unrealistic structure - just for testing AFM sublattices
             a, b, c, d = 1.40803, 0.81293, 4.68453, 1.62585
             cell = [[a, -b, c], [0.0, d, c], [-a, -b, c]]
-            positions = [[0, 0, 0], [0, 0, 1.5], [0, 0, -1.5], [0, 0, 0.5], [0, 0, 3.6608], [0, 0, 10.392],
-                         [0, 0, 7.0268]]
+            positions = [
+                [0, 0, 0],
+                [0, 0, 1.5],
+                [0, 0, -1.5],
+                [0, 0, 0.5],
+                [0, 0, 3.6608],
+                [0, 0, 10.392],
+                [0, 0, 7.0268],
+            ]
             names = ['Co0', 'Co0', 'Co1', 'Co1', 'O', 'O', 'Li']
             symbols = ['Co', 'Co', 'Co', 'Co', 'O', 'O', 'Li']
             structure = StructureData(cell=cell)
@@ -425,6 +430,7 @@ def generate_parser():
         :return: the `Parser` sub class
         """
         from aiida.plugins import ParserFactory
+
         return ParserFactory(entry_point_name)
 
     return _generate_parser
@@ -450,9 +456,7 @@ def generate_inputs_pw(fixture_code, generate_structure, generate_kpoints_mesh, 
             'kpoints': generate_kpoints_mesh(2),
             'parameters': Dict(parameters_base),
             'pseudos': {kind: generate_upf_data(kind) for kind in structure.get_kind_names()},
-            'metadata': {
-                'options': get_default_options()
-            }
+            'metadata': {'options': get_default_options()},
         }
 
         return inputs
@@ -462,8 +466,12 @@ def generate_inputs_pw(fixture_code, generate_structure, generate_kpoints_mesh, 
 
 @pytest.fixture
 def generate_inputs_hp(
-    fixture_code, aiida_localhost, generate_calc_job_node, generate_inputs_pw, generate_kpoints_mesh,
-    generate_hubbard_structure
+    fixture_code,
+    aiida_localhost,
+    generate_calc_job_node,
+    generate_inputs_pw,
+    generate_kpoints_mesh,
+    generate_hubbard_structure,
 ):
     """Generate default inputs for a `HpCalculation."""
 
@@ -481,9 +489,7 @@ def generate_inputs_hp(
             'parent_scf': parent.outputs.remote_folder,
             'qpoints': generate_kpoints_mesh(2),
             'parameters': Dict({'INPUTHP': inputs or {}}),
-            'metadata': {
-                'options': get_default_options()
-            }
+            'metadata': {'options': get_default_options()},
         }
 
         return inputs
@@ -527,7 +533,7 @@ def generate_inputs_hubbard(generate_inputs_pw, generate_inputs_hp, generate_hub
             },
             'hubbard': {
                 'hp': inputs_hp,
-            }
+            },
         }
 
         return inputs
@@ -564,6 +570,7 @@ def generate_upf_data():
     def _generate_upf_data(element):
         """Return `UpfData` node."""
         from aiida_pseudo.data.pseudo import UpfData
+
         content = f'<UPF version="2.0.1"><PP_HEADER\nelement="{element}"\nz_valence="4.0"\n/></UPF>\n'
         stream = io.BytesIO(content.encode('utf-8'))
         return UpfData(stream, filename=f'{element}.upf')

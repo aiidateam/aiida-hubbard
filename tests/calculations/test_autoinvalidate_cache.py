@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Test the automatic ``invalidates_cache`` attribute for exit codes."""
+
 import inspect
 
 from aiida.engine import CalcJob

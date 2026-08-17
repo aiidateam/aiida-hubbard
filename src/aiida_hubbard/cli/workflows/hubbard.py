@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Command line scripts to launch a `SelfConsistentHubbardWorkChain` for testing and demonstration purposes."""
+
 from aiida.cmdline.params import types
 from aiida.cmdline.utils import decorators
 from aiida_quantumespresso.cli.utils import launch
@@ -15,14 +15,14 @@ from . import cmd_launch
     'code_pw',
     type=types.CodeParamType(entry_point='quantumespresso.pw'),
     required=True,
-    help='The code to use for the pw.x executable.'
+    help='The code to use for the pw.x executable.',
 )
 @click.option(
     '--hp',
     'code_hp',
     type=types.CodeParamType(entry_point='quantumespresso.hp'),
     required=True,
-    help='The code to use for the hp.x executable.'
+    help='The code to use for the hp.x executable.',
 )
 @options_qe.STRUCTURE()
 @options_qe.PSEUDO_FAMILY()
@@ -37,22 +37,32 @@ from . import cmd_launch
 @options_qe.WITH_MPI()
 @options_qe.DAEMON()
 @click.option(
-    '--meta-convergence',
-    is_flag=True,
-    default=False,
-    help='Switch on the meta-convergence for the Hubbard parameters.'
+    '--meta-convergence', is_flag=True, default=False, help='Switch on the meta-convergence for the Hubbard parameters.'
 )
 @click.option(
     '--parallelize-atoms',
     is_flag=True,
     default=False,
-    help='Parallelize the linear response calculation over the Hubbard atoms.'
+    help='Parallelize the linear response calculation over the Hubbard atoms.',
 )
 @decorators.with_dbenv()
 def launch_workflow(
-    code_pw, code_hp, structure, pseudo_family, kpoints_mesh, qpoints_mesh, ecutwfc, ecutrho, hubbard_u,
-    starting_magnetization, max_num_machines, max_wallclock_seconds, daemon, meta_convergence, parallelize_atoms,
-    with_mpi
+    code_pw,
+    code_hp,
+    structure,
+    pseudo_family,
+    kpoints_mesh,
+    qpoints_mesh,
+    ecutwfc,
+    ecutrho,
+    hubbard_u,
+    starting_magnetization,
+    max_num_machines,
+    max_wallclock_seconds,
+    daemon,
+    meta_convergence,
+    parallelize_atoms,
+    with_mpi,
 ):
     """Run the `SelfConsistentHubbardWorkChain` for a given input structure."""
     from aiida import orm
@@ -69,7 +79,7 @@ def launch_workflow(
         },
         'ELECTRONS': {
             'mixing_beta': 0.4,
-        }
+        },
     }
 
     parameters_hp = {'INPUTHP': {}}
@@ -81,15 +91,13 @@ def launch_workflow(
         raise click.BadParameter(
             f'the kinds in the specified starting Hubbard U values {hubbard_u_kinds} is not a strict subset of the '
             f'kinds in the structure {structure_kinds}',
-            param_hint='hubbard_u'
+            param_hint='hubbard_u',
         )
 
     if starting_magnetization:
-
         parameters['SYSTEM']['nspin'] = 2
 
         for kind, magnetization in starting_magnetization:
-
             if kind not in structure_kinds:
                 raise click.BadParameter(
                     f'the provided structure does not contain the kind {kind}', param_hint='starting_magnetization'
@@ -107,9 +115,7 @@ def launch_workflow(
                 'code': code_pw,
                 'pseudos': pseudo_family.get_pseudos(structure=structure),
                 'parameters': orm.Dict(dict=parameters),
-                'metadata': {
-                    'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)
-                }
+                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
             },
         },
         'relax': {
@@ -120,11 +126,9 @@ def launch_workflow(
                     'code': code_pw,
                     'pseudos': pseudo_family.get_pseudos(structure=structure),
                     'parameters': orm.Dict(dict=parameters),
-                    'metadata': {
-                        'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)
-                    }
-                }
-            }
+                    'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
+                },
+            },
         },
         'scf': {
             'kpoints': kpoints_mesh,
@@ -132,22 +136,18 @@ def launch_workflow(
                 'code': code_pw,
                 'pseudos': pseudo_family.get_pseudos(structure=structure),
                 'parameters': orm.Dict(dict=parameters),
-                'metadata': {
-                    'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)
-                }
-            }
+                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
+            },
         },
         'hubbard': {
             'hp': {
                 'code': code_hp,
                 'qpoints': qpoints_mesh,
                 'parameters': orm.Dict(dict=parameters_hp),
-                'metadata': {
-                    'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)
-                }
+                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
             },
             'parallelize_atoms': orm.Bool(parallelize_atoms),
-        }
+        },
     }
 
     launch.launch_process(WorkflowFactory('quantumespresso.hp.hubbard'), daemon, **inputs)

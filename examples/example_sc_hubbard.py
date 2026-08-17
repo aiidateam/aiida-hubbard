@@ -1,6 +1,6 @@
 #!/usr/bin/env runaiida
-# -*- coding: utf-8 -*-
 """Test actual run of self-consistent Hubbard workchain."""
+
 from aiida import load_profile
 from aiida.engine import run
 from aiida.orm import StructureData, load_code
@@ -40,30 +40,30 @@ def test_self_consistent_hubbard():
         hp_code=hp_code,
         hubbard_structure=hubbard_structure,
         protocol='fast',
-        overrides={ # this can be more conveniently moved on file as .yaml file
+        overrides={  # this can be more conveniently moved on file as .yaml file
             # 'relax':{
             #     'base':{
             #         'kpoints_distance': 100.0, # so high that it gives 1x1x1
             #     },
             # },
-            'scf':{
-                'kpoints_distance': 100.0, # so high that it gives 1x1x1
-                'pw':{
-                    'parameters':{
-                        'SYSTEM':{
+            'scf': {
+                'kpoints_distance': 100.0,  # so high that it gives 1x1x1
+                'pw': {
+                    'parameters': {
+                        'SYSTEM': {
                             'ecutwfc': 30.0,
                             'ecutrho': 30.0 * 8,
                         },
                     },
                 },
             },
-            'hubbard':{
+            'hubbard': {
                 'parallelize_atoms': True,
                 'parallelize_qpoints': True,
-                'qpoints_distance': 100.0, # so high that it gives 1x1x1
+                'qpoints_distance': 100.0,  # so high that it gives 1x1x1
             },
         },
-        **kwargs
+        **kwargs,
     )
     builder.pop('relax')  # comment this to also relax
 

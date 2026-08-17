@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Calculation function to reorder the kinds of a structure with the Hubbard sites first."""
+
 from aiida.engine import calcfunction
 from aiida_quantumespresso.data.hubbard_structure import HubbardStructureData
 from aiida_quantumespresso.utils.hubbard import HubbardUtils

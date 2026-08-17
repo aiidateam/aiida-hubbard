@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=unused-argument,redefined-outer-name
 """Tests for the `HpParser`."""
+
 from aiida import orm
 from aiida.common import AttributeDict
 import pytest
@@ -18,10 +17,9 @@ def generate_inputs_default(generate_hubbard_structure):
     def _generate_inputs_default(only_u=True):
         """Return only those inputs that the parser will expect to be there."""
         parameters = {'INPUTHP': {}}
-        return AttributeDict({
-            'parameters': orm.Dict(parameters),
-            'hubbard_structure': generate_hubbard_structure(only_u=only_u)
-        })
+        return AttributeDict(
+            {'parameters': orm.Dict(parameters), 'hubbard_structure': generate_hubbard_structure(only_u=only_u)}
+        )
 
     return _generate_inputs_default
 
@@ -50,36 +48,29 @@ def generate_inputs_voronoi(filepath_tests):
 
         from aiida_quantumespresso.utils.hubbard import initialize_hubbard_parameters
         from ase.io import read
+
         path = os.path.join(filepath_tests, 'fixtures', 'structures', 'MnCoS.cif')
         atoms = read(path)
         pairs = {
-            'Mn': ['3d', 5.0, 1e-8, {
-                'S': '3p'
-            }],
-            'Co': ['3d', 5.0, 1e-8, {
-                'S': '3p'
-            }],
+            'Mn': ['3d', 5.0, 1e-8, {'S': '3p'}],
+            'Co': ['3d', 5.0, 1e-8, {'S': '3p'}],
         }
         if all_neihbours:
             pairs = {
-                'Mn': ['3d', 5.0, 1e-8, {
-                    'S': '3p',
-                    'Co': '3d'
-                }],
-                'Co': ['3d', 5.0, 1e-8, {
-                    'S': '3p',
-                    'Mn': '3d'
-                }],
+                'Mn': ['3d', 5.0, 1e-8, {'S': '3p', 'Co': '3d'}],
+                'Co': ['3d', 5.0, 1e-8, {'S': '3p', 'Mn': '3d'}],
             }
         structure = orm.StructureData(ase=atoms)
         hubbard_structure = initialize_hubbard_parameters(structure=structure, pairs=pairs)
         parameters = {'INPUTHP': {'num_neigh': 10}}
         settings = {'radial_analysis': {}}
-        return AttributeDict({
-            'parameters': orm.Dict(parameters),
-            'settings': orm.Dict(settings),
-            'hubbard_structure': hubbard_structure,
-        })
+        return AttributeDict(
+            {
+                'parameters': orm.Dict(parameters),
+                'settings': orm.Dict(settings),
+                'hubbard_structure': hubbard_structure,
+            }
+        )
 
     return _generate_inputs_voronoi
 
@@ -99,7 +90,7 @@ def test_hp_default(
         test_name=name,
         inputs=generate_inputs_default(only_u=True),
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -111,13 +102,15 @@ def test_hp_default(
     assert 'hubbard_chi' in results
     assert 'hubbard_matrices' in results
     assert 'hubbard_structure' in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-        'hubbard_chi': results['hubbard_chi'].base.attributes.all,
-        'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
-        'hubbard': results['hubbard'].get_dict(),
-        'hubbard_data': results['hubbard_structure'].hubbard.dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+            'hubbard_chi': results['hubbard_chi'].base.attributes.all,
+            'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
+            'hubbard': results['hubbard'].get_dict(),
+            'hubbard_data': results['hubbard_structure'].hubbard.dict(),
+        }
+    )
 
 
 def test_hp_default_hubbard_structure(
@@ -135,7 +128,7 @@ def test_hp_default_hubbard_structure(
         test_name=name,
         inputs=generate_inputs_default(only_u=False),
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -147,19 +140,26 @@ def test_hp_default_hubbard_structure(
     assert 'hubbard_chi' in results
     assert 'hubbard_structure' in results
     assert 'hubbard_matrices' in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-        'hubbard': results['hubbard'].get_dict(),
-        'hubbard_chi': results['hubbard_chi'].base.attributes.all,
-        'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
-        'hubbard_data': results['hubbard_structure'].hubbard.dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+            'hubbard': results['hubbard'].get_dict(),
+            'hubbard_chi': results['hubbard_chi'].base.attributes.all,
+            'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
+            'hubbard_data': results['hubbard_structure'].hubbard.dict(),
+        }
+    )
 
 
 @pytest.mark.parametrize('all_neihbours', (True, False))
 def test_hp_voronoi_hubbard_structure(
-    aiida_localhost, generate_calc_job_node, generate_parser, generate_inputs_voronoi, data_regression, tmpdir,
-    all_neihbours
+    aiida_localhost,
+    generate_calc_job_node,
+    generate_parser,
+    generate_inputs_voronoi,
+    data_regression,
+    tmpdir,
+    all_neihbours,
 ):
     """Test a `hp.x` calculation with nearest-neihbour analysis."""
     name = 'voronoi_hubbard_structure'
@@ -173,7 +173,7 @@ def test_hp_voronoi_hubbard_structure(
         test_name=name,
         inputs=generate_inputs_voronoi(all_neihbours),
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -185,13 +185,15 @@ def test_hp_voronoi_hubbard_structure(
     assert 'hubbard_chi' in results
     assert 'hubbard_structure' in results
     assert 'hubbard_matrices' in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-        'hubbard': results['hubbard'].get_dict(),
-        'hubbard_chi': results['hubbard_chi'].base.attributes.all,
-        'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
-        'hubbard_data': results['hubbard_structure'].hubbard.dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+            'hubbard': results['hubbard'].get_dict(),
+            'hubbard_chi': results['hubbard_chi'].base.attributes.all,
+            'hubbard_matrices': results['hubbard_matrices'].base.attributes.all,
+            'hubbard_data': results['hubbard_structure'].hubbard.dict(),
+        }
+    )
 
 
 def test_hp_initialization_only(
@@ -213,9 +215,11 @@ def test_hp_initialization_only(
     assert 'hubbard_chi' not in results
     assert 'hubbard_matrices' not in results
     assert 'hubbard_structure' not in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+        }
+    )
 
 
 def test_hp_initialization_only_intersites(
@@ -235,7 +239,7 @@ def test_hp_initialization_only_intersites(
         test_name=name,
         inputs=generate_inputs_init_only,
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -247,9 +251,11 @@ def test_hp_initialization_only_intersites(
     assert 'hubbard_chi' not in results
     assert 'hubbard_matrices' not in results
     assert 'hubbard_structure' not in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+        }
+    )
 
 
 def test_hp_initialization_only_mesh(
@@ -269,7 +275,7 @@ def test_hp_initialization_only_mesh(
         test_name=name,
         inputs=generate_inputs_mesh_only,
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -281,9 +287,11 @@ def test_hp_initialization_only_mesh(
     assert 'hubbard_chi' not in results
     assert 'hubbard_matrices' not in results
     assert 'hubbard_structure' not in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+        }
+    )
 
 
 def test_hp_initialization_only_mesh_more_points(
@@ -303,7 +311,7 @@ def test_hp_initialization_only_mesh_more_points(
         test_name=name,
         inputs=generate_inputs_mesh_only,
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     results, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)
@@ -315,9 +323,11 @@ def test_hp_initialization_only_mesh_more_points(
     assert 'hubbard_chi' not in results
     assert 'hubbard_matrices' not in results
     assert 'hubbard_structure' not in results
-    data_regression.check({
-        'parameters': results['parameters'].get_dict(),
-    })
+    data_regression.check(
+        {
+            'parameters': results['parameters'].get_dict(),
+        }
+    )
 
 
 def test_hp_failed_invalid_namelist(aiida_localhost, generate_calc_job_node, generate_parser, generate_inputs_default):
@@ -335,18 +345,21 @@ def test_hp_failed_invalid_namelist(aiida_localhost, generate_calc_job_node, gen
     assert calcfunction.exit_status == node.process_class.exit_codes.ERROR_INVALID_NAMELIST.status
 
 
-@pytest.mark.parametrize(('name', 'exit_status'), (
-    ('failed_no_hubbard_parameters', HpCalculation.exit_codes.ERROR_OUTPUT_HUBBARD_MISSING.status),
-    ('failed_no_hubbard_chi', HpCalculation.exit_codes.ERROR_OUTPUT_HUBBARD_CHI_MISSING.status),
-    ('failed_stdout_incomplete', HpCalculation.exit_codes.ERROR_OUTPUT_STDOUT_INCOMPLETE.status),
-    ('failed_fermi_shift', HpCalculation.exit_codes.ERROR_FERMI_SHIFT.status),
-    ('failed_out_of_walltime', HpCalculation.exit_codes.ERROR_OUT_OF_WALLTIME.status),
-    ('failed_computing_cholesky', HpCalculation.exit_codes.ERROR_COMPUTING_CHOLESKY.status),
-    ('failed_s_matrix_not_positive_definite', HpCalculation.exit_codes.ERROR_S_MATRIX_NOT_POSITIVE_DEFINITE.status),
-    ('failed_missing_chi_matrices', HpCalculation.exit_codes.ERROR_MISSING_CHI_MATRICES.status),
-    ('failed_incompatible_fft_grid', HpCalculation.exit_codes.ERROR_INCOMPATIBLE_FFT_GRID.status),
-    ('diverging_default', HpCalculation.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS.status),
-))
+@pytest.mark.parametrize(
+    ('name', 'exit_status'),
+    (
+        ('failed_no_hubbard_parameters', HpCalculation.exit_codes.ERROR_OUTPUT_HUBBARD_MISSING.status),
+        ('failed_no_hubbard_chi', HpCalculation.exit_codes.ERROR_OUTPUT_HUBBARD_CHI_MISSING.status),
+        ('failed_stdout_incomplete', HpCalculation.exit_codes.ERROR_OUTPUT_STDOUT_INCOMPLETE.status),
+        ('failed_fermi_shift', HpCalculation.exit_codes.ERROR_FERMI_SHIFT.status),
+        ('failed_out_of_walltime', HpCalculation.exit_codes.ERROR_OUT_OF_WALLTIME.status),
+        ('failed_computing_cholesky', HpCalculation.exit_codes.ERROR_COMPUTING_CHOLESKY.status),
+        ('failed_s_matrix_not_positive_definite', HpCalculation.exit_codes.ERROR_S_MATRIX_NOT_POSITIVE_DEFINITE.status),
+        ('failed_missing_chi_matrices', HpCalculation.exit_codes.ERROR_MISSING_CHI_MATRICES.status),
+        ('failed_incompatible_fft_grid', HpCalculation.exit_codes.ERROR_INCOMPATIBLE_FFT_GRID.status),
+        ('diverging_default', HpCalculation.exit_codes.ERROR_DIVERGING_HUBBARD_PARAMETERS.status),
+    ),
+)
 def test_failed_calculation(
     generate_calc_job_node,
     generate_parser,
@@ -382,7 +395,7 @@ def test_hp_diverging_hubbard_structure(
         test_name=name,
         inputs=generate_inputs_default(only_u=False),
         attributes=attributes,
-        retrieve_temporary=(tmpdir, ['HUBBARD.dat'])
+        retrieve_temporary=(tmpdir, ['HUBBARD.dat']),
     )
     parser = generate_parser(entry_point_parser)
     _, calcfunction = parser.parse_from_node(node, store_provenance=False, retrieved_temporary_folder=tmpdir)

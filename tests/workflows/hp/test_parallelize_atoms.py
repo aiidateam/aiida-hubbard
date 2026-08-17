@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=no-member,redefined-outer-name
 """Tests for the `HpParallelizeAtomsWorkChain` class."""
+
 from plumpy import ProcessState
 import pytest
 
@@ -13,6 +12,7 @@ def generate_workchain_atoms(generate_workchain, generate_inputs_hp, generate_hu
 
     def _generate_workchain_atoms(hp_inputs=None, parallelize_qpoints=False, max_concurrent_base_workchains=None):
         from aiida.orm import Bool, Int
+
         entry_point = 'quantumespresso.hp.parallelize_atoms'
         hp_inputs = generate_inputs_hp(inputs=hp_inputs)
         hp_inputs['hubbard_structure'] = generate_hubbard_structure()
@@ -39,12 +39,14 @@ def generate_hp_workchain_node(generate_calc_job_node):
         node.set_process_state(ProcessState.FINISHED)
         node.set_exit_status(exit_status)
 
-        parameters = Dict({
-            'hubbard_sites': {
-                '1': 'Co',
-                '2': 'O',
+        parameters = Dict(
+            {
+                'hubbard_sites': {
+                    '1': 'Co',
+                    '2': 'O',
+                }
             }
-        }).store()
+        ).store()
         parameters.base.links.add_incoming(node, link_type=LinkType.RETURN, link_label='parameters')
 
         if use_retrieved:

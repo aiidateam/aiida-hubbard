@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Tests for the ``HpBaseWorkChain.get_builder_from_protocol`` method."""
+
 from aiida.engine import ProcessBuilder
 
 from aiida_hubbard.workflows.hp.base import HpBaseWorkChain
@@ -54,7 +54,7 @@ def test_parameter_overrides(fixture_code):
 
     overrides = {'hp': {'parameters': {'INPUTHP': {'conv_thr_chi': 1}}}}
     builder = HpBaseWorkChain.get_builder_from_protocol(code, overrides=overrides)
-    assert builder.hp.parameters['INPUTHP']['conv_thr_chi'] == 1  # pylint: disable=no-member
+    assert builder.hp.parameters['INPUTHP']['conv_thr_chi'] == 1
 
 
 def test_settings_overrides(fixture_code):
@@ -63,7 +63,7 @@ def test_settings_overrides(fixture_code):
 
     overrides = {'hp': {'settings': {'cmdline': ['--kickass-mode']}}}
     builder = HpBaseWorkChain.get_builder_from_protocol(code, overrides=overrides)
-    assert builder.hp.settings['cmdline'] == ['--kickass-mode']  # pylint: disable=no-member
+    assert builder.hp.settings['cmdline'] == ['--kickass-mode']
     assert builder.hp.settings['parent_folder_symlink']
 
 
@@ -76,7 +76,7 @@ def test_metadata_overrides(fixture_code):
         code,
         overrides=overrides,
     )
-    metadata = builder.hp.metadata  # pylint: disable=no-member
+    metadata = builder.hp.metadata
 
     assert metadata['options']['resources']['num_machines'] == 1e90
     assert metadata['options']['max_wallclock_seconds'] == 1
@@ -91,7 +91,7 @@ def test_options(fixture_code):
 
     options = {'queue_name': queue_name, 'withmpi': withmpi}
     builder = HpBaseWorkChain.get_builder_from_protocol(code, options=options)
-    metadata = builder.hp.metadata  # pylint: disable=no-member
+    metadata = builder.hp.metadata
 
     assert metadata['options']['queue_name'] == queue_name
     assert metadata['options']['withmpi'] == withmpi

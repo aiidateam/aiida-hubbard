@@ -5,4 +5,5 @@
 :maxdepth: 2
 
 api/aiida_hubbard/index
+developer
 ```

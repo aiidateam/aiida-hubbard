@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=no-member,redefined-outer-name
 """Tests for the `SelfConsistentHubbardWorkChain` class."""
+
 from aiida.common import AttributeDict
 from aiida.orm import Bool, Dict, Int, load_node
 from plumpy import ProcessState
@@ -78,23 +77,11 @@ def generate_hp_workchain_node(generate_hubbard_structure):
 
         if relabel:
             sites = [
-                {
-                    'index': 0,
-                    'type': 1,
-                    'kind': 'Co',
-                    'new_type': 2,
-                    'spin': 1
-                },
+                {'index': 0, 'type': 1, 'kind': 'Co', 'new_type': 2, 'spin': 1},
             ]
         else:
             sites = [
-                {
-                    'index': 0,
-                    'type': 1,
-                    'kind': 'Co',
-                    'new_type': 1,
-                    'spin': 1
-                },
+                {'index': 0, 'type': 1, 'kind': 'Co', 'new_type': 1, 'spin': 1},
             ]
 
         hubbard = Dict({'sites': sites}).store()
@@ -105,11 +92,13 @@ def generate_hp_workchain_node(generate_hubbard_structure):
     return _generate_hp_workchain_node
 
 
-@pytest.mark.parametrize(('parameters', 'match'), (({
-    'nspin': 2
-}, r'Missing `starting_magnetization` input in `scf.pw.parameters` while `nspin == 2`.'), ({
-    'nspin': 4
-}, r'nspin=`.*` is not implemented in the `hp.x` code.')))
+@pytest.mark.parametrize(
+    ('parameters', 'match'),
+    (
+        ({'nspin': 2}, r'Missing `starting_magnetization` input in `scf.pw.parameters` while `nspin == 2`.'),
+        ({'nspin': 4}, r'nspin=`.*` is not implemented in the `hp.x` code.'),
+    ),
+)
 @pytest.mark.usefixtures('aiida_profile')
 def test_validate_inputs_invalid_inputs(generate_workchain_hubbard, generate_inputs_hubbard, parameters, match):
     """Test `SelfConsistentHubbardWorkChain.validate_inputs` for invalid inputs."""
@@ -286,8 +275,10 @@ def test_skip_relax_iterations_relabeling(
     assert not process.should_check_convergence()
     process.ctx.workchains_hp = [generate_hp_workchain_node(relabel=True, u_value=1, only_u=True)]
     process.inspect_hp()
-    assert process.ctx.current_hubbard_structure.get_kind_names(
-    ) != process.ctx.workchains_hp[-1].outputs.hubbard_structure.get_kind_names()
+    assert (
+        process.ctx.current_hubbard_structure.get_kind_names()
+        != process.ctx.workchains_hp[-1].outputs.hubbard_structure.get_kind_names()
+    )
     # 2
     process.update_iteration()
     assert process.should_run_relax()
@@ -533,6 +524,7 @@ def test_relabel_check_convergence(
 def test_inspect_hp(generate_workchain_hubbard, generate_inputs_hubbard, generate_hp_workchain_node):
     """Test `SelfConsistentHubbardWorkChain.inspect_hp`."""
     from aiida_hubbard.workflows.hubbard import SelfConsistentHubbardWorkChain as WorkChain
+
     inputs = generate_inputs_hubbard()
     process = generate_workchain_hubbard(inputs=inputs)
     process.setup()

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Utilities for validating various data structures."""
 
 
@@ -48,7 +47,6 @@ def validate_structure_kind_order(structure, hubbard_kinds):
     :param hubbard_kinds: a list of Hubbard kinds
     """
     for kind in structure.kinds:
-
         if not hubbard_kinds:
             return
 

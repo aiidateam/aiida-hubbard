@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 """Workchain to run a Quantum ESPRESSO hp.x calculation with automated error handling and restarts."""
+
 from aiida import orm
 from aiida.common import AttributeDict
 from aiida.common.lang import type_check
@@ -15,16 +15,18 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
 
     _process_class = HpCalculation
 
-    defaults = AttributeDict({
-        'delta_factor_alpha_mix': 0.5,
-        'delta_factor_niter_max': 2,
-        'delta_factor_max_seconds': 0.95,
-    })
+    defaults = AttributeDict(
+        {
+            'delta_factor_alpha_mix': 0.5,
+            'delta_factor_niter_max': 2,
+            'delta_factor_max_seconds': 0.95,
+        }
+    )
 
     @classmethod
     def define(cls, spec):
         """Define the process specification."""
-        # yapf: disable
+        # fmt: off
         super().define(spec)
         spec.expose_inputs(HpCalculation, namespace='hp')
         spec.input('only_initialization', valid_type=orm.Bool, default=lambda: orm.Bool(False))
@@ -44,6 +46,7 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
         spec.expose_outputs(HpCalculation)
         spec.exit_code(300, 'ERROR_UNRECOVERABLE_FAILURE',
             message='The calculation failed with an unrecoverable error.')
+        # fmt: on
 
     @classmethod
     def get_protocol_filepath(cls):
@@ -51,6 +54,7 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
         from importlib_resources import files
 
         from ..protocols import hp as hp_protocols
+
         return files(hp_protocols) / 'base.yaml'
 
     @classmethod
@@ -62,7 +66,7 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
         parent_hp_folders: dict = None,
         overrides=None,
         options=None,
-        **_
+        **_,
     ):
         """Return a builder prepopulated with inputs selected according to the chosen protocol.
 
@@ -101,10 +105,9 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
             metadata['options'] = recursive_merge(inputs['hp']['metadata']['options'], options)
 
         hubbard_structure = inputs['hp'].pop('hubbard_structure', None)
-        parent_scf = parent_scf_folder if not 'parent_scf' in inputs['hp'] else inputs['hp']['parent_scf']
-        parent_hp = parent_hp_folders if not 'parent_scf' in inputs['hp'] else inputs['hp']['parent_scf']
+        parent_scf = parent_scf_folder if 'parent_scf' not in inputs['hp'] else inputs['hp']['parent_scf']
+        parent_hp = parent_hp_folders if 'parent_hp' not in inputs['hp'] else inputs['hp']['parent_hp']
 
-        # pylint: disable=no-member
         builder = cls.get_builder()
         builder.hp['code'] = code
         builder.hp['qpoints'] = qpoints
@@ -120,7 +123,6 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
             builder.hp['parent_hp'] = parent_hp
         builder.only_initialization = orm.Bool(inputs['only_initialization'])
         builder.clean_workdir = orm.Bool(inputs['clean_workdir'])
-        # pylint: enable=no-member
 
         return builder
 
@@ -191,14 +193,13 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
 
         for key in ['-ndiag', '-northo', '-nd']:
             if key in cmdline:
-
                 index = cmdline.index(key)
 
-                if int(cmdline[index+1]) == 1:
+                if int(cmdline[index + 1]) == 1:
                     self.report('diagonalization flag already to 1, stopping')
                     return ProcessHandlerReport(False)
 
-                cmdline[index+1] = '1' # enforce to be 1
+                cmdline[index + 1] = '1'  # enforce to be 1
                 break
         else:
             cmdline += ['-nd', '1']
@@ -206,7 +207,6 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
         settings['cmdline'] = cmdline
         self.report('set parallelization flag for diagonalization to 1, restarting')
         return ProcessHandlerReport(True)
-
 
     @process_handler(priority=410, exit_codes=HpCalculation.exit_codes.ERROR_CONVERGENCE_NOT_REACHED)
     def handle_convergence_not_reached(self, _):
@@ -233,7 +233,7 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
             changes.append(f'set `{parameter}` to {parameters[parameter]}')
 
         if changes:
-            self.report(f"convergence not reached: {', '.join(changes)}")
+            self.report(f'convergence not reached: {", ".join(changes)}')
         else:
             self.report('convergence not reached, restarting')
 
@@ -252,10 +252,10 @@ class HpBaseWorkChain(BaseRestartWorkChain, ProtocolMixin):
         for called_descendant in self.node.called_descendants:
             if isinstance(called_descendant, orm.CalcJobNode):
                 try:
-                    called_descendant.outputs.remote_folder._clean()  # pylint: disable=protected-access
+                    called_descendant.outputs.remote_folder._clean()
                     cleaned_calcs.append(called_descendant.pk)
                 except (IOError, OSError, KeyError):
                     pass
 
         if cleaned_calcs:
-            self.report(f"cleaned remote folders of calculations: {' '.join(map(str, cleaned_calcs))}")
+            self.report(f'cleaned remote folders of calculations: {" ".join(map(str, cleaned_calcs))}')

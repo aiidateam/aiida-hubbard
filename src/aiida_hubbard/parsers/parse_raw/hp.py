@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """A collection of function that are used to parse the output of Quantum Espresso HP.
 
 The function that needs to be called from outside is parse_raw_output().
 The functions mostly work without aiida specific functionalities.
 """
+
 import re
 
 from aiida_quantumespresso.utils.mapping import get_logging_container
@@ -23,7 +23,6 @@ def parse_raw_output(stdout):
     # Parse the output line by line by creating an iterator of the lines
     iterator = iter(stdout.split('\n'))
     for line in iterator:
-
         # If the output does not contain the line with 'JOB DONE' the program was prematurely terminated
         if 'JOB DONE' in line:
             is_prematurely_terminated = False
@@ -94,7 +93,7 @@ def detect_important_message(logs, line):
         'warning': {
             'Warning:': None,
             'DEPRECATED:': None,
-        }
+        },
     }
 
     # Match any known error and warning messages

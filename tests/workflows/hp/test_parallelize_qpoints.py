@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# pylint: disable=no-member,redefined-outer-name
 """Tests for the `HpParallelizeQpointsWorkChain` class."""
+
 from plumpy import ProcessState
 import pytest
 
@@ -13,6 +12,7 @@ def generate_workchain_qpoints(generate_workchain, generate_inputs_hp, generate_
 
     def _generate_workchain_qpoints(hp_inputs=None, max_concurrent_base_workchains=None):
         from aiida.orm import Int
+
         entry_point = 'quantumespresso.hp.parallelize_qpoints'
 
         if hp_inputs is None:
