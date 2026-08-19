@@ -8,13 +8,18 @@ from aiida import orm
 from aiida.common.datastructures import CalcInfo, CodeInfo
 from aiida.common.utils import classproperty
 from aiida.plugins import CalculationFactory, DataFactory
-from aiida_quantumespresso.calculations import CalcJob, _lowercase_dict, _uppercase_dict
+from aiida_quantumespresso.calculations import CalcJob, _case_transform_dict, _uppercase_dict
 from aiida_quantumespresso.utils.convert import convert_input_to_namelist_entry
 
 from aiida_hubbard.utils.general import is_perturb_only_atom
 
 PwCalculation = CalculationFactory('quantumespresso.pw')
 HubbardStructureData = DataFactory('quantumespresso.hubbard_structure')
+
+
+def _lowercase_dict(dictionary, dict_name):
+    """Return a copy of the dictionary with all keys lowercase, raising if that induces key clashes."""
+    return _case_transform_dict(dictionary, dict_name, '_lowercase_dict', str.lower)
 
 
 def validate_parent_scf(parent_scf, _):

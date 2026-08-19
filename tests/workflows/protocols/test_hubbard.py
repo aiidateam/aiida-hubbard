@@ -72,4 +72,5 @@ def test_options(fixture_code, generate_hubbard_structure):
 
     assert builder.hubbard.hp.metadata['options']['queue_name'] == queue_name
     assert builder.scf.pw.metadata['options']['queue_name'] == queue_name
-    assert builder.relax.base.pw.metadata['options']['queue_name'] == queue_name
+    assert builder.relax.base_relax.pw.metadata['options']['queue_name'] == queue_name
+    assert builder.relax.base_init_relax.pw.metadata['options']['queue_name'] == queue_name

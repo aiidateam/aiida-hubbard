@@ -124,7 +124,7 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
         spec.input('relax_frequency', valid_type=orm.Int, required=False, validator=validate_positive,
             help='Integer value referring to the number of iterations to wait before performing the `relax` step.')
         spec.expose_inputs(PwRelaxWorkChain, namespace='relax',
-            exclude=('clean_workdir', 'structure', 'base_final_scf'),
+            exclude=('clean_workdir', 'structure'),
             namespace_options={'required': False, 'populate_defaults': False,
                 'help': 'Inputs for the `PwRelaxWorkChain` that, when defined, will iteratively relax the structure.'})
         spec.expose_inputs(PwBaseWorkChain, namespace='scf',
@@ -242,7 +242,6 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
 
         relax.pop('clean_workdir')
         relax.pop('structure')
-        relax.pop('base_final_scf', None)  # We do not want to run a final scf, since it would be time wasted.
         scf.pop('clean_workdir')
         scf['pw'].pop('structure')
 
@@ -383,11 +382,13 @@ class SelfConsistentHubbardWorkChain(WorkChain, ProtocolMixin):
             inputs.pw.structure = self.ctx.current_hubbard_structure
 
         elif cls is PwRelaxWorkChain and namespace == 'relax':
-            inputs.base = self.set_pw_parameters(inputs.base)
-            # inputs.base.pw.parameters.setdefault('IONS', {})
             inputs.structure = self.ctx.current_hubbard_structure
-            inputs.base.pw.pseudos = pseudos
-            inputs.pop('base_final_scf', None)  # We do not want to run a final scf, since it would be time wasted.
+            if 'base_init_relax' in inputs:
+                inputs.base_init_relax = self.set_pw_parameters(inputs.base_init_relax)
+                inputs.base_init_relax.pw.pseudos = pseudos
+            inputs.base_relax = self.set_pw_parameters(inputs.base_relax)
+            # inputs.base_relax.pw.parameters.setdefault('IONS', {})
+            inputs.base_relax.pw.pseudos = pseudos
 
         return inputs
 
