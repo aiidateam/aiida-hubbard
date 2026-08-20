@@ -1,69 +1,81 @@
 """Command line scripts to launch a `HpWorkChain` for testing and demonstration purposes."""
 
-from aiida.cmdline.params import options, types
+from aiida.cmdline.params import options as options_core
+from aiida.cmdline.params import types
 from aiida.cmdline.utils import decorators
-from aiida_quantumespresso.cli.utils import launch
-from aiida_quantumespresso.cli.utils import options as options_qe
-import click
+import yaml
 
+from ...utils import get_options, launch, options, validate_parallelization
 from .. import cmd_launch
 
 
 @cmd_launch.command('hp-main')
-@options.CODE(required=True, type=types.CodeParamType(entry_point='quantumespresso.hp'))
-@options_qe.KPOINTS_MESH(default=[1, 1, 1])
-@options_qe.PARENT_FOLDER()
-@options_qe.MAX_NUM_MACHINES()
-@options_qe.MAX_WALLCLOCK_SECONDS()
-@options_qe.WITH_MPI()
-@options_qe.DAEMON()
-@options.DRY_RUN()
-@options_qe.CLEAN_WORKDIR()
-@click.option(
-    '--parallelize-atoms',
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help='Parallelize the linear response calculation over the Hubbard atoms.',
-)
+@options_core.CODE(required=True, type=types.CodeParamType(entry_point='quantumespresso.hp'))
+@options.PARENT_FOLDER()
+@options.HUBBARD_STRUCTURE()
+@options.PROTOCOL()
+@options.OVERRIDES()
+@options.QPOINTS_MESH()
+@options.QPOINTS_DISTANCE()
+@options.PARALLELIZE_ATOMS()
+@options.PARALLELIZE_QPOINTS()
+@options.MAX_NUM_MACHINES()
+@options.MAX_WALLCLOCK_SECONDS()
+@options.WITH_MPI()
+@options.CLEAN_WORKDIR()
+@options.DAEMON()
 @decorators.with_dbenv()
 def launch_workflow(
     code,
-    kpoints_mesh,
     parent_folder,
+    hubbard_structure,
+    protocol,
+    overrides,
+    qpoints_mesh,
+    qpoints_distance,
+    parallelize_atoms,
+    parallelize_qpoints,
     max_num_machines,
     max_wallclock_seconds,
     with_mpi,
     clean_workdir,
-    parallelize_atoms,
     daemon,
-    dry_run,
 ):
-    """Run a `HpWorkChain`."""
-    from aiida import orm
+    """Run an `HpWorkChain`.
+
+    It computes the Hubbard parameters, optionally parallelizing the linear response calculation over the Hubbard
+    atoms and their perturbations (q-points).
+    """
     from aiida.plugins import WorkflowFactory
-    from aiida_quantumespresso.utils.resources import get_default_options
 
-    parameters = {'INPUTHP': {}}
+    overrides = (yaml.safe_load(overrides) or {}) if overrides else {}
+    parallelize_atoms, parallelize_qpoints = validate_parallelization(parallelize_atoms, parallelize_qpoints)
 
-    inputs = {
-        'hp': {
-            'code': code,
-            'qpoints': kpoints_mesh,
-            'parameters': orm.Dict(dict=parameters),
-            'parent_scf': parent_folder,
-            'metadata': {
-                'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi),
-            },
-        },
-        'parallelize_atoms': orm.Bool(parallelize_atoms),
-        'clean_workdir': orm.Bool(clean_workdir),
-    }
+    if qpoints_distance is not None:
+        overrides['qpoints_distance'] = qpoints_distance
 
-    if dry_run:
-        if daemon:
-            raise click.BadParameter('cannot send to the daemon if in dry_run mode', param_hint='--daemon')
-        inputs.setdefault('metadata', {})['store_provenance'] = False
-        inputs['metadata']['dry_run'] = True
+    if parallelize_atoms is not None:
+        overrides['parallelize_atoms'] = parallelize_atoms
 
-    launch.launch_process(WorkflowFactory('quantumespresso.hp.main'), daemon, **inputs)
+    if parallelize_qpoints is not None:
+        overrides['parallelize_qpoints'] = parallelize_qpoints
+
+    if clean_workdir is not None:
+        overrides['clean_workdir'] = clean_workdir
+
+    if hubbard_structure:
+        overrides.setdefault('hp', {})['hubbard_structure'] = hubbard_structure
+
+    builder = WorkflowFactory('quantumespresso.hp.main').get_builder_from_protocol(
+        code=code,
+        protocol=protocol,
+        parent_scf_folder=parent_folder,
+        overrides=overrides or None,
+        options=get_options(max_num_machines, max_wallclock_seconds, with_mpi),
+    )
+
+    if qpoints_mesh:
+        builder.pop('qpoints_distance', None)
+        builder.qpoints = qpoints_mesh
+
+    launch.launch_process(builder, daemon)

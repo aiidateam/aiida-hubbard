@@ -1,0 +1,5 @@
+clean_workdir: false
+hp:
+  parameters:
+    INPUTHP:
+      conv_thr_chi: 1.0e-3

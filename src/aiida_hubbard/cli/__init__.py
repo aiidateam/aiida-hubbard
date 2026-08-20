@@ -6,8 +6,8 @@ import click
 
 
 @click.group('aiida-hubbard', cls=VerdiCommandGroup, context_settings={'help_option_names': ['-h', '--help']})
-@options.PROFILE(type=types.ProfileParamType(load_profile=True))
-def cmd_root(profile):
+@options.PROFILE(type=types.ProfileParamType(load_profile=True), expose_value=False)
+def cmd_root():
     """CLI for the `aiida-hubbard` plugin."""
 
 
