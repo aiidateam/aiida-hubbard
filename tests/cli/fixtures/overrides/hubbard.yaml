@@ -1,0 +1,4 @@
+tolerance_onsite: 0.5
+max_iterations: 3
+scf:
+  kpoints_distance: 1.0

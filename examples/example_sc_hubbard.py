@@ -42,7 +42,10 @@ def test_self_consistent_hubbard():
         protocol='fast',
         overrides={  # this can be more conveniently moved on file as .yaml file
             # 'relax':{
-            #     'base':{
+            #     'base_init_relax':{
+            #         'kpoints_distance': 100.0, # so high that it gives 1x1x1
+            #     },
+            #     'base_relax':{
             #         'kpoints_distance': 100.0, # so high that it gives 1x1x1
             #     },
             # },

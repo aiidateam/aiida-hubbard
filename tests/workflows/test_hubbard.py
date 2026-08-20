@@ -167,6 +167,43 @@ def test_magnetic_setup(generate_workchain_hubbard, generate_inputs_hubbard):
 
 
 @pytest.mark.usefixtures('aiida_profile')
+def test_relax_inputs(generate_workchain_hubbard, generate_inputs_hubbard):
+    """Test `SelfConsistentHubbardWorkChain.get_inputs` for the `relax` namespace.
+
+    Both the `base_init_relax` and the `base_relax` namespaces must receive the pseudos
+    of the current structure and the current starting magnetization.
+    """
+    from aiida_hubbard.workflows.hubbard import PwRelaxWorkChain
+
+    inputs = AttributeDict(generate_inputs_hubbard())
+    inputs.scf.pw.parameters['SYSTEM'].update({'nspin': 2, 'starting_magnetization': {'Co': 0.5}})
+    process = generate_workchain_hubbard(inputs=inputs)
+    process.setup()
+
+    relax_inputs = process.get_inputs(PwRelaxWorkChain, 'relax')
+
+    assert relax_inputs.structure == process.ctx.current_hubbard_structure
+
+    kind_names = sorted(process.ctx.current_hubbard_structure.get_kind_names())
+    for namespace in ('base_init_relax', 'base_relax'):
+        assert namespace in relax_inputs
+        assert sorted(relax_inputs[namespace].pw.pseudos.keys()) == kind_names
+        parameters = relax_inputs[namespace].pw.parameters.get_dict()
+        assert parameters['SYSTEM']['starting_magnetization'] == {'Co': 0.5}
+
+    # The `base_init_relax` namespace is optional and can be left out.
+    inputs = AttributeDict(generate_inputs_hubbard())
+    inputs.relax.pop('base_init_relax')
+    process = generate_workchain_hubbard(inputs=inputs)
+    process.setup()
+
+    relax_inputs = process.get_inputs(PwRelaxWorkChain, 'relax')
+
+    assert 'base_init_relax' not in relax_inputs
+    assert sorted(relax_inputs.base_relax.pw.pseudos.keys()) == kind_names
+
+
+@pytest.mark.usefixtures('aiida_profile')
 def test_skip_relax_iterations(generate_workchain_hubbard, generate_inputs_hubbard, generate_hp_workchain_node):
     """Test `SelfConsistentHubbardWorkChain` when skipping the first relax iterations."""
     inputs = generate_inputs_hubbard()

@@ -522,10 +522,14 @@ def generate_inputs_hubbard(generate_inputs_pw, generate_inputs_hp, generate_hub
             'meta_convergence': Bool(True),
             'hubbard_structure': hubbard_structure,
             'relax': {
-                'base': {
+                'base_init_relax': {
                     'pw': inputs_pw,
                     'kpoints': kpoints,
-                }
+                },
+                'base_relax': {
+                    'pw': inputs_pw,
+                    'kpoints': kpoints,
+                },
             },
             'scf': {
                 'pw': inputs_pw,
