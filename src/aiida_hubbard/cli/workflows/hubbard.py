@@ -1,153 +1,139 @@
 """Command line scripts to launch a `SelfConsistentHubbardWorkChain` for testing and demonstration purposes."""
 
-from aiida.cmdline.params import types
 from aiida.cmdline.utils import decorators
-from aiida_quantumespresso.cli.utils import launch
-from aiida_quantumespresso.cli.utils import options as options_qe
 import click
+import yaml
 
+from ..utils import defaults, get_options, launch, options, validate_parallelization
 from . import cmd_launch
 
 
 @cmd_launch.command('hubbard')
+@options.PW_CODE()
+@options.HP_CODE()
+@options.HUBBARD_STRUCTURE(
+    default=defaults.get_hubbard_structure,
+    help='A HubbardStructureData node identified by its ID or UUID, with initialized Hubbard parameters. If not '
+    'specified, a bulk LiCoO2 structure with an initialized on-site Hubbard U on cobalt is used.',
+)
+@options.PROTOCOL()
+@options.OVERRIDES()
+@options.PSEUDO_FAMILY()
+@options.KPOINTS_MESH()
+@options.QPOINTS_MESH()
+@options.ELECTRONIC_TYPE()
+@options.SPIN_TYPE()
+@options.RELAX_TYPE()
 @click.option(
-    '--pw',
-    'code_pw',
-    type=types.CodeParamType(entry_point='quantumespresso.pw'),
-    required=True,
-    help='The code to use for the pw.x executable.',
+    '--relax/--no-relax',
+    'relax',
+    default=True,
+    show_default=True,
+    help='Iteratively relax the structure with the `PwRelaxWorkChain` during the self-consistent cycle.',
 )
 @click.option(
-    '--hp',
-    'code_hp',
-    type=types.CodeParamType(entry_point='quantumespresso.hp'),
-    required=True,
-    help='The code to use for the hp.x executable.',
-)
-@options_qe.STRUCTURE()
-@options_qe.PSEUDO_FAMILY()
-@options_qe.KPOINTS_MESH(required=True, help='The k-point mesh to use for the SCF calculations.')
-@options_qe.QPOINTS_MESH(required=True, help='The q-point mesh to use for the linear response calculation.')
-@options_qe.ECUTWFC()
-@options_qe.ECUTRHO()
-@options_qe.HUBBARD_U(required=True)
-@options_qe.STARTING_MAGNETIZATION()
-@options_qe.MAX_NUM_MACHINES()
-@options_qe.MAX_WALLCLOCK_SECONDS()
-@options_qe.WITH_MPI()
-@options_qe.DAEMON()
-@click.option(
-    '--meta-convergence', is_flag=True, default=False, help='Switch on the meta-convergence for the Hubbard parameters.'
+    '--init-relax/--no-init-relax',
+    'init_relax',
+    default=True,
+    show_default=True,
+    help='Prepend a relaxation with looser thresholds to each relaxation step.',
 )
 @click.option(
-    '--parallelize-atoms',
-    is_flag=True,
-    default=False,
-    help='Parallelize the linear response calculation over the Hubbard atoms.',
+    '--meta-convergence/--no-meta-convergence',
+    'meta_convergence',
+    default=None,
+    help='Run the self-consistent cycle until the Hubbard parameters are converged. If not specified, the value '
+    'defined by the protocol is used.',
 )
+@options.PARALLELIZE_ATOMS()
+@options.PARALLELIZE_QPOINTS()
+@options.MAX_NUM_MACHINES()
+@options.MAX_WALLCLOCK_SECONDS()
+@options.WITH_MPI()
+@options.CLEAN_WORKDIR()
+@options.DAEMON()
 @decorators.with_dbenv()
 def launch_workflow(
-    code_pw,
-    code_hp,
-    structure,
+    pw_code,
+    hp_code,
+    hubbard_structure,
+    protocol,
+    overrides,
     pseudo_family,
     kpoints_mesh,
     qpoints_mesh,
-    ecutwfc,
-    ecutrho,
-    hubbard_u,
-    starting_magnetization,
-    max_num_machines,
-    max_wallclock_seconds,
-    daemon,
+    electronic_type,
+    spin_type,
+    relax_type,
+    relax,
+    init_relax,
     meta_convergence,
     parallelize_atoms,
+    parallelize_qpoints,
+    max_num_machines,
+    max_wallclock_seconds,
     with_mpi,
+    clean_workdir,
+    daemon,
 ):
-    """Run the `SelfConsistentHubbardWorkChain` for a given input structure."""
-    from aiida import orm
+    """Run a `SelfConsistentHubbardWorkChain`.
+
+    It computes the self-consistent Hubbard parameters of the given `HubbardStructureData`, iterating a
+    (relax-)scf-hp cycle until the Hubbard parameters are converged within the tolerances of the protocol.
+    """
     from aiida.plugins import WorkflowFactory
-    from aiida_quantumespresso.utils.resources import get_default_options
 
-    cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structure)
+    overrides = (yaml.safe_load(overrides) or {}) if overrides else {}
+    parallelize_atoms, parallelize_qpoints = validate_parallelization(parallelize_atoms, parallelize_qpoints)
 
-    parameters = {
-        'SYSTEM': {
-            'ecutwfc': ecutwfc or cutoff_wfc,
-            'ecutrho': ecutrho or cutoff_rho,
-            'lda_plus_u': True,
-        },
-        'ELECTRONS': {
-            'mixing_beta': 0.4,
-        },
-    }
+    if pseudo_family:
+        overrides.setdefault('scf', {})['pseudo_family'] = pseudo_family.label
+        relax_overrides = overrides.setdefault('relax', {})
+        relax_overrides.setdefault('base_relax', {})['pseudo_family'] = pseudo_family.label
+        relax_overrides.setdefault('base_init_relax', {})['pseudo_family'] = pseudo_family.label
 
-    parameters_hp = {'INPUTHP': {}}
+    if meta_convergence is not None:
+        overrides['meta_convergence'] = meta_convergence
 
-    structure_kinds = structure.get_kind_names()
-    hubbard_u_kinds = [kind for kind, value in hubbard_u]
+    if clean_workdir is not None:
+        overrides['clean_workdir'] = clean_workdir
 
-    if not set(hubbard_u_kinds).issubset(structure_kinds):
-        raise click.BadParameter(
-            f'the kinds in the specified starting Hubbard U values {hubbard_u_kinds} is not a strict subset of the '
-            f'kinds in the structure {structure_kinds}',
-            param_hint='hubbard_u',
-        )
+    if parallelize_atoms is not None:
+        overrides.setdefault('hubbard', {})['parallelize_atoms'] = parallelize_atoms
 
-    if starting_magnetization:
-        parameters['SYSTEM']['nspin'] = 2
+    if parallelize_qpoints is not None:
+        overrides.setdefault('hubbard', {})['parallelize_qpoints'] = parallelize_qpoints
 
-        for kind, magnetization in starting_magnetization:
-            if kind not in structure_kinds:
-                raise click.BadParameter(
-                    f'the provided structure does not contain the kind {kind}', param_hint='starting_magnetization'
-                )
+    builder = WorkflowFactory('quantumespresso.hp.hubbard').get_builder_from_protocol(
+        pw_code=pw_code,
+        hp_code=hp_code,
+        hubbard_structure=hubbard_structure,
+        protocol=protocol,
+        overrides=overrides or None,
+        options_pw=get_options(max_num_machines, max_wallclock_seconds, with_mpi),
+        options_hp=get_options(max_num_machines, max_wallclock_seconds, with_mpi),
+        electronic_type=electronic_type,
+        spin_type=spin_type,
+        relax_type=relax_type,
+    )
 
-            parameters['SYSTEM'].setdefault('starting_magnetization', {})[kind] = magnetization
+    if not relax:
+        builder.pop('relax', None)
+    elif not init_relax:
+        builder.relax.pop('base_init_relax', None)
 
-    inputs = {
-        'structure': structure,
-        'hubbard_u': orm.Dict(dict=dict(hubbard_u)),
-        'meta_convergence': orm.Bool(meta_convergence),
-        'recon': {
-            'kpoints': kpoints_mesh,
-            'pw': {
-                'code': code_pw,
-                'pseudos': pseudo_family.get_pseudos(structure=structure),
-                'parameters': orm.Dict(dict=parameters),
-                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
-            },
-        },
-        'relax': {
-            'meta_convergence': orm.Bool(False),
-            'base': {
-                'kpoints': kpoints_mesh,
-                'pw': {
-                    'code': code_pw,
-                    'pseudos': pseudo_family.get_pseudos(structure=structure),
-                    'parameters': orm.Dict(dict=parameters),
-                    'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
-                },
-            },
-        },
-        'scf': {
-            'kpoints': kpoints_mesh,
-            'pw': {
-                'code': code_pw,
-                'pseudos': pseudo_family.get_pseudos(structure=structure),
-                'parameters': orm.Dict(dict=parameters),
-                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
-            },
-        },
-        'hubbard': {
-            'hp': {
-                'code': code_hp,
-                'qpoints': qpoints_mesh,
-                'parameters': orm.Dict(dict=parameters_hp),
-                'metadata': {'options': get_default_options(max_num_machines, max_wallclock_seconds, with_mpi)},
-            },
-            'parallelize_atoms': orm.Bool(parallelize_atoms),
-        },
-    }
+    if kpoints_mesh:
+        builder.scf.pop('kpoints_distance', None)
+        builder.scf.kpoints = kpoints_mesh
 
-    launch.launch_process(WorkflowFactory('quantumespresso.hp.hubbard'), daemon, **inputs)
+        if 'relax' in builder:
+            for namespace in ('base_init_relax', 'base_relax'):
+                if namespace in builder.relax:
+                    builder.relax[namespace].pop('kpoints_distance', None)
+                    builder.relax[namespace].kpoints = kpoints_mesh
+
+    if qpoints_mesh:
+        builder.hubbard.pop('qpoints_distance', None)
+        builder.hubbard.qpoints = qpoints_mesh
+
+    launch.launch_process(builder, daemon)

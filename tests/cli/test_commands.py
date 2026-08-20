@@ -32,6 +32,34 @@ def recurse_commands(command: click.Command, parents: list[str] = None):
         yield [command.name]
 
 
+def test_commands_available():
+    """Test that all expected commands are registered with the CLI."""
+    expected = [
+        ['aiida-hubbard'],
+        ['aiida-hubbard', 'calculation'],
+        ['aiida-hubbard', 'calculation', 'launch'],
+        ['aiida-hubbard', 'calculation', 'launch', 'hp'],
+        ['aiida-hubbard', 'workflow'],
+        ['aiida-hubbard', 'workflow', 'launch'],
+        ['aiida-hubbard', 'workflow', 'launch', 'hp-base'],
+        ['aiida-hubbard', 'workflow', 'launch', 'hp-main'],
+        ['aiida-hubbard', 'workflow', 'launch', 'hubbard'],
+    ]
+    assert sorted(recurse_commands(cmd_root)) == sorted(expected)
+
+
+def test_commands_protocols():
+    """Test that the protocols exposed by the CLI match those implemented by the work chains."""
+    from aiida_hubbard.cli.utils.options import DEFAULT_PROTOCOL, PROTOCOLS
+    from aiida_hubbard.workflows.hp.base import HpBaseWorkChain
+    from aiida_hubbard.workflows.hp.main import HpWorkChain
+    from aiida_hubbard.workflows.hubbard import SelfConsistentHubbardWorkChain
+
+    for cls in (HpBaseWorkChain, HpWorkChain, SelfConsistentHubbardWorkChain):
+        assert sorted(cls.get_available_protocols()) == sorted(PROTOCOLS)
+        assert cls.get_default_protocol() == DEFAULT_PROTOCOL
+
+
 @pytest.mark.parametrize('command', recurse_commands(cmd_root))
 @pytest.mark.parametrize('help_option', ('--help', '-h'))
 def test_commands_help_option(command, help_option):
