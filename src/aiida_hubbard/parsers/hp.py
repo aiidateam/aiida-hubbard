@@ -246,18 +246,28 @@ class HpParser(Parser):
 
     def get_hubbard_structure(self):
         """Set in output an ``HubbardStructureData`` with standard Hubbard U formulation."""
+        from collections import defaultdict
         from copy import deepcopy
 
         hubbard_structure = deepcopy(self.node.inputs.hubbard_structure)
         hubbard_structure.clear_hubbard_parameters()
 
         hubbard_sites = self.outputs.hubbard.get_dict()['sites']
+        sites = hubbard_structure.sites
 
+        # hp.x outputs U per atom; atoms of the same kind get slightly different
+        # values due to numerical noise.  Average per (kind, manifold) and use the
+        # kind's first atom index — matching what parse_hubbard_dat does — so the
+        # generated HUBBARD card has exactly one "U <kind>-<manifold>" line per kind.
+        kind_manifold_values = defaultdict(list)
         for hubbard_site in hubbard_sites:
-            index = int(hubbard_site['index'])
-            manifold = hubbard_site['manifold']
-            value = float(hubbard_site['value'])
-            args = (index, manifold, index, manifold, value, (0, 0, 0), 'Ueff')
+            kind_name = sites[int(hubbard_site['index'])].kind_name
+            kind_manifold_values[(kind_name, hubbard_site['manifold'])].append(float(hubbard_site['value']))
+
+        for (kind_name, manifold), values in kind_manifold_values.items():
+            index = int(hubbard_structure._get_one_kind_index(kind_name)[0])  # noqa: SLF001
+            avg_value = sum(values) / len(values)
+            args = (index, manifold, index, manifold, avg_value, (0, 0, 0), 'Ueff')
             hubbard_structure.append_hubbard_parameter(*args)
 
         self.out('hubbard_structure', hubbard_structure)
