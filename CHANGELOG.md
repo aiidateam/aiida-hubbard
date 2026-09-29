@@ -1,3 +1,24 @@
+## v0.7.0
+
+This minor release adds support for `aiida-quantumespresso` v5.0. Since v5.0 reworks the `PwRelaxWorkChain`, the `relax` namespace of the `SelfConsistentHubbardWorkChain` changes accordingly: `relax.base` is renamed to `relax.base_relax`, `relax.base_final_scf` and `volume_convergence` are removed, and the new optional loose pre-relaxation `relax.base_init_relax` is supported. Make sure to update your scripts, since protocol overrides using the old keys are silently ignored.
+
+Moreover, the command line interface, which no longer worked with the current work chains, is rebuilt on top of the protocols: all launch commands now accept `-p/--protocol` and `-o/--overrides`.
+
+### ✨ New features
+
+* ✨ CLI: rebuild the command line interface on protocols [[2a33fbf](https://github.com/aiidateam/aiida-hubbard/commit/2a33fbf26decd13bcfdd98994760fb7dc8f3850f)]
+
+
+### 🔧 Maintenance
+
+* 🔧 Devops: migrate developer tooling to Hatch and Ruff  [[df7de97](https://github.com/aiidateam/aiida-hubbard/commit/df7de978ae4671aad58df3ff239d0001d7cae55f)]
+
+### ⬆️ Update dependencies
+
+* ⬆️ Deps: support aiida-quantumespresso v5.0 [[91823e2](https://github.com/aiidateam/aiida-hubbard/commit/91823e2e6021ece0fe26a4a87fb9bcaf709f3354)]
+
+
+
 ## v0.6.0
 
 Minor release to support newer Python versions, and dropping the end-of-life 3.9 Python.
